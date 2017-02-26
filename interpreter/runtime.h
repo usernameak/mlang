@@ -16,7 +16,10 @@ enum Opcode {
 	OPCODE_PUSH = 5,
 	OPCODE_PUSHV = 6,
 	OPCODE_ASSN = 7,
-	OPCODE_RTCL = 8
+	OPCODE_RTCL = 8,
+	OPCODE_FSTART = 9,
+	OPCODE_RET = 10,
+	OPCODE_PUSHF = 11
 };
 
 class Runtime {

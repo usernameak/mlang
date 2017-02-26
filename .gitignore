@@ -1,3 +1,2 @@
 *.mo
-*.o
-interpreter/mlang
+interpreter/build
