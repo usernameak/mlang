@@ -5,7 +5,7 @@
 #include "runtime.h"
 int main(int argc, char **argv) {
 	if(argc < 2 || argc > 3) {
-		std::cout << std::flush << "usage: mlang [-v] <compiled source name>" << std::endl;
+		std::cerr << std::flush << "usage: mlang [-v] <compiled source name>" << std::endl;
 		return 1;
 	}
 	bool verbose = false;
@@ -13,13 +13,14 @@ int main(int argc, char **argv) {
 		if(!strcmp(argv[1], "-v")) {
 			verbose = true;
 		} else {
-			std::cout << std::flush << "usage: mlang [-v] <compiled source name>" << std::endl;
+			std::cerr << std::flush << "usage: mlang [-v] <compiled source name>" << std::endl;
 			return 1;
 		}
 	}
 	char *filename = argv[argc == 3 ? 2 : 1];
 	std::ifstream* cfile = new std::ifstream(filename);
 	Runtime* rt = new Runtime(cfile);
+	rt->load();
 	std::chrono::steady_clock::time_point begin;
 	if(verbose) {
 		begin = std::chrono::steady_clock::now();

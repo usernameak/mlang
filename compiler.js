@@ -34,10 +34,23 @@ Compiler.prototype.pushExpression = function(expr) {
 Compiler.prototype.compile = function() {
 	var out = "";
 	for(var i = 0; i < this.pcode.length; i++) {
+		debugger;
 		var statement = this.pcode[i];
 		if(statement.type == "assign_statement") {
 			out += this.pushExpression(statement.value);
 			out += "assn " + statement.assignee.name + "\n";
+		} else if(statement.type == "function_statement") {
+			out += "fstart\n";
+			for(var j = statement.args.length-1; j >= 0; j--) {
+				out += "assn " + statement.args[i].name + "\n";
+			}
+			var fc = new Compiler(statement.block.statements);
+			out += fc.compile();
+			out += "pushf\n";
+			out += "assn " + statement.name.name + "\n";
+		} else if(statement.type == "return_statement") {
+			out += this.pushExpression(statement.val);
+			out += "ret\n";
 		} else if(statement.type == "runtime_statement") {
 			for(var i = 0; i < statement.args.length; i++) {
 				out += this.pushExpression(statement.args[i]);
@@ -63,7 +76,10 @@ Compiler.prototype.assemble = function() {
 		"push": 5,
 		"pushv": 6,
 		"assn": 7,
-		"rtcl": 8
+		"rtcl": 8,
+		"fstart": 9,
+		"ret": 10,
+		"pushf": 11
 	}
 	var opfuncs = {
 		push: function(bc, num) {

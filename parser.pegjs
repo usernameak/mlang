@@ -19,7 +19,7 @@
 }
 
 code = statement*
-statement = _n s:(assign_statement / runtime_statement) _n ";" {
+statement = _n s:(function_statement / assign_statement / return_statement / runtime_statement) _n ";" {
 	return s;
 }
 assign_statement = assignee:identifier _ "=" _ value:expression {
@@ -29,7 +29,21 @@ assign_statement = assignee:identifier _ "=" _ value:expression {
         value: value
     }
 }
+function_statement = name:identifier _ "(" args:(_ arg:identifier _ {return arg})+ ")" _ "=" _ block:block {
+	return {
+    	type: "function_statement",
+        name: name,
+        args: args,
+        block: block
+    }
+}
 expression "expression" = add_expression / number / identifier
+return_statement = "return" __ val:expression {
+	return {
+    	type: "return_statement",
+        val: val
+    }
+}
 runtime_statement = name:identifier args:(__ arg:expression {return arg})* {
 	return {
     	type: "runtime_statement",
@@ -43,7 +57,13 @@ add_expression = left:mul_expression right:(_ op:("+" / "-") _ expr:mul_expressi
 mul_expression = left:prim_expression right:(_ op:("/" / "*") _ expr:prim_expression {return {op:op, expr:expr}})+ {
 	return buildBinaryExpr(left, right);
 }  / prim_expression
-prim_expression = "(" _ expr:add_expression _ ")" {return expr} / number / identifier
+prim_expression = "(" _ expr:expression _ ")" {return expr} / number / identifier
+block "block" = "{" _n sm:statement* _n "}" {
+	return {
+    	type: "block_expression",
+        statements: sm
+       }
+}
 number "number" = n:($("-"?([1-9][0-9]*) / "0")) {return {
 	type: "number",
 	val: +n

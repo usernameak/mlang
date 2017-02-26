@@ -5,6 +5,8 @@
 #include <cstdint>
 #include <map>
 #include <string>
+#include <vector>
+#include "ops.h"
 
 enum Opcode {
 	OPCODE_ADD = 1,
@@ -22,7 +24,9 @@ private:
 	std::istream* bcstream;
 	std::stack<int32_t>* rstack;
 	std::map<std::string, int32_t>* rvars;
+	std::vector<MOp*>* opsv;
 public:
 	Runtime(std::istream*);
+	void load();
 	void run();
 };
