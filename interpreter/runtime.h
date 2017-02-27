@@ -28,6 +28,7 @@ private:
 	std::stack<int32_t>* rstack;
 	std::map<std::string, int32_t>* rvars;
 	std::vector<MOp*>* opsv;
+	std::stack<int32_t>* fwstack;
 public:
 	Runtime(std::istream*);
 	void load();

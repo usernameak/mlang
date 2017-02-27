@@ -40,9 +40,10 @@ Compiler.prototype.compile = function() {
 			out += this.pushExpression(statement.value);
 			out += "assn " + statement.assignee.name + "\n";
 		} else if(statement.type == "function_statement") {
+			
 			out += "fstart\n";
 			for(var j = statement.args.length-1; j >= 0; j--) {
-				out += "assn " + statement.args[i].name + "\n";
+				out += "assn " + statement.args[j].name + "\n";
 			}
 			var fc = new Compiler(statement.block.statements);
 			out += fc.compile();
@@ -52,12 +53,12 @@ Compiler.prototype.compile = function() {
 			out += this.pushExpression(statement.val);
 			out += "ret\n";
 		} else if(statement.type == "runtime_statement") {
-			for(var i = 0; i < statement.args.length; i++) {
-				out += this.pushExpression(statement.args[i]);
+			for(var j = 0; j < statement.args.length; j++) {
+				out += this.pushExpression(statement.args[j]);
 			}
 			out += "rtcl "+statement.name.name+"\n";
 		} else if(statement.type == "equation_statement") {
-			console.log("??? FUCKING SHIT EQUATIONS NOW NOT SUPPORTED MOTHERFUCKER !!!");
+			// wtf???
 			return;
 		} else {
 

@@ -35,3 +35,12 @@ struct MAssnOp :  MOp {
 struct MRtclOp  : MOp {
 	std::string name;
 };
+
+struct MFstartOp  : MOp {
+};
+
+struct MRetOp :  MOp {
+};
+
+struct MPushfOp :  MOp {
+};
