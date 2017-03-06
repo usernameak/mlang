@@ -4,43 +4,39 @@
 #include <string>
 
 struct MOp {
-
 	int type;
 };
 
-struct MAddOp  : MOp {
-};
+struct MAddOp : MOp {};
 
-struct MSubOp :  MOp {
-};
+struct MSubOp : MOp {};
 
-struct MMulOp :  MOp {
-};
+struct MMulOp : MOp {};
 
-struct MDivOp :  MOp {
-};
+struct MDivOp : MOp {};
 
-struct MPushOp:   MOp {
+struct MPushOp : MOp {
 	int32_t value;
 };
 
-struct MPushvOp   :MOp {
+struct MPushvOp : MOp {
 	std::string name;
 };
 
-struct MAssnOp :  MOp {
+struct MAssnOp : MOp {
 	std::string name;
 };
 
-struct MRtclOp  : MOp {
+struct MRtclOp : MOp {
 	std::string name;
 };
 
-struct MFstartOp  : MOp {
-};
+struct MFstartOp : MOp {};
 
-struct MRetOp :  MOp {
-};
+struct MRetOp : MOp {};
 
-struct MPushfOp :  MOp {
-};
+struct MPushfOp : MOp {};
+
+struct MCallOp : MOp {};
+
+struct MPopOp : MOp {};

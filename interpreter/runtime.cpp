@@ -5,8 +5,8 @@
 #include <cstdint>
 #include <map>
 #include <string>
-#define NDEBUG
-#include <cassert>
+#include <vector>
+#include "ops.h"
 
 Runtime::Runtime(std::istream* _bcstream) {
 	bcstream = _bcstream;
@@ -14,6 +14,7 @@ Runtime::Runtime(std::istream* _bcstream) {
 	rvars = new std::map<std::string, int32_t>();
 	opsv = new std::vector<MOp*>();
 	fwstack = new std::stack<int32_t>();
+	callstack = new std::stack<int32_t>();
 }
 
 void Runtime::load() {
@@ -85,6 +86,16 @@ void Runtime::load() {
 				pushfop->type = op;
 				opsv->push_back((MOp*)pushfop);
 			}break;
+			case OPCODE_CALL:{
+				MCallOp *callop = new MCallOp();
+				callop->type = op;
+				opsv->push_back((MOp*)callop);
+			}break;
+			case OPCODE_POP:{
+				MPopOp *popop = new MPopOp();
+				popop->type = op;
+				opsv->push_back((MOp*)popop);
+			}break;
 		}
 		
 	}
@@ -96,6 +107,9 @@ void Runtime::run() {
 		MOp* op = *i;
 		if(!fwstack->empty()) {
 			switch(op->type) {
+				case OPCODE_FSTART:
+					fwstack->push(i - opsv->begin());
+				break;
 				case OPCODE_PUSHF:
 					rstack->push(fwstack->top());
 					fwstack->pop();
@@ -154,10 +168,19 @@ void Runtime::run() {
 					fwstack->push(i - opsv->begin());
 				break;
 				case OPCODE_RET:
-					// TODO
+					i = opsv->begin() + callstack->top();
+					callstack->pop();
 				break;
 				case OPCODE_PUSHF:
 					std::cout << "Error: unexpected `pushf` opcode" << std::endl;
+				break;
+				case OPCODE_CALL:
+					callstack->push(i - opsv->begin());
+					i = opsv->begin() + rstack->top();
+					rstack->pop();
+				break;
+				case OPCODE_POP:
+					rstack->pop();
 				break;
 			}
 		}

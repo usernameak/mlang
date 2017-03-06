@@ -19,7 +19,7 @@
 }
 
 code = statement*
-statement = _n s:(function_statement / assign_statement / return_statement / runtime_statement) _n ";" {
+statement = _n s:(assign_statement / return_statement / runtime_statement / function_statement / call_statement) _n ";" {
     return s;
 }
 assign_statement = assignee:identifier _ "=" _ value:expression {
@@ -37,16 +37,28 @@ function_statement = name:identifier _ "(" args:(_ arg:identifier _ {return arg}
         block: block
     }
 }
-expression "expression" = add_expression / number / identifier
 return_statement = "return" __ val:expression {
     return {
         type: "return_statement",
         val: val
     }
 }
-runtime_statement = name:identifier args:(__ arg:expression {return arg})* {
+runtime_statement = "$" __ name:identifier args:(__ arg:expression {return arg})* {
     return {
         type: "runtime_statement",
+        name: name,
+        args: args
+    }
+}
+call_statement = expr:call_expression {
+    expr.type = "call_statement";
+    return expr;
+}
+
+expression "expression" = call_expression / add_expression / number / identifier
+call_expression = name:identifier _ "(" args:(_ arg:expression _ {return arg})* ")" {
+    return {
+        type: "call_expression",
         name: name,
         args: args
     }
@@ -58,6 +70,7 @@ mul_expression = left:prim_expression right:(_ op:("/" / "*") _ expr:prim_expres
     return buildBinaryExpr(left, right);
 }  / prim_expression
 prim_expression = "(" _ expr:expression _ ")" {return expr} / number / identifier
+
 block = "{" _n sm:statement* _n "}" {
     return {
         type: "block_expression",
@@ -72,6 +85,7 @@ identifier "identifier" = name:$([a-zA-Z_][a-zA-Z0-9_]*) {return {
     type: "identifier",
     name: name
 }}
+
 _ "whitespace" = [ \t]*
 __ "whitespace" = [ \t]+
 _n "newline" = [ \t\n]*

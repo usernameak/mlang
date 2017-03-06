@@ -19,7 +19,9 @@ enum Opcode {
 	OPCODE_RTCL = 8,
 	OPCODE_FSTART = 9,
 	OPCODE_RET = 10,
-	OPCODE_PUSHF = 11
+	OPCODE_PUSHF = 11,
+	OPCODE_CALL = 12,
+	OPCODE_POP = 13
 };
 
 class Runtime {
@@ -29,6 +31,7 @@ private:
 	std::map<std::string, int32_t>* rvars;
 	std::vector<MOp*>* opsv;
 	std::stack<int32_t>* fwstack;
+	std::stack<int32_t>* callstack;
 public:
 	Runtime(std::istream*);
 	void load();

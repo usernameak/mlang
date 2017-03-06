@@ -1,5 +1,6 @@
 b = 10;
 a(c) = {
-	return 2+1;
+	return c+22;
 };
-output a;
+a(b);
+$ output a(b);

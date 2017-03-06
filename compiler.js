@@ -27,6 +27,13 @@ Compiler.prototype.pushExpression = function(expr) {
 		case "identifier":
 			out += "pushv " + expr.name + "\n";
 		break;
+		case "call_expression":
+			for(var j = 0; j < expr.args.length; j++) {
+				out += this.pushExpression(expr.args[j]);
+			}
+			out += "pushv " + expr.name.name + "\n";
+			out += "call\n";
+		break;
 	}
 	return out;
 };
@@ -57,9 +64,12 @@ Compiler.prototype.compile = function() {
 				out += this.pushExpression(statement.args[j]);
 			}
 			out += "rtcl "+statement.name.name+"\n";
-		} else if(statement.type == "equation_statement") {
-			// wtf???
-			return;
+		} else if(statement.type == "call_statement") {
+			for(var j = 0; j < statement.args.length; j++) {
+				out += this.pushExpression(statement.args[j]);
+			}
+			out += "pushv " + statement.name.name + "\n";
+			out += "call\npop\n";
 		} else {
 
 		}
@@ -80,7 +90,9 @@ Compiler.prototype.assemble = function() {
 		"rtcl": 8,
 		"fstart": 9,
 		"ret": 10,
-		"pushf": 11
+		"pushf": 11,
+		"call": 12,
+		"pop": 13
 	}
 	var opfuncs = {
 		push: function(bc, num) {
