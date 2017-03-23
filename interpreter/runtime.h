@@ -8,6 +8,9 @@
 #include <vector>
 #include "ops.h"
 
+
+#define NATIVEFUNC_SET(name, func) nativefunctions[name] = &func
+
 enum Opcode {
 	OPCODE_ADD = 1,
 	OPCODE_SUB = 2,
@@ -19,21 +22,30 @@ enum Opcode {
 	OPCODE_RTCL = 8,
 	OPCODE_FSTART = 9,
 	OPCODE_RET = 10,
-	OPCODE_PUSHF = 11,
+	OPCODE_PUSHS = 11,
 	OPCODE_CALL = 12,
 	OPCODE_POP = 13
 };
 
+struct MFrame {
+	std::vector<MOp*> ops;
+	std::string name;
+	std::vector<MFrame*> subframes;
+	std::map<std::string, int32_t> vars;
+	
+};
+
 class Runtime {
 private:
+	std::vector<MFrame*> frames;
 	std::istream* bcstream;
 	std::stack<int32_t>* rstack;
-	std::map<std::string, int32_t>* rvars;
-	std::vector<MOp*>* opsv;
-	std::stack<int32_t>* fwstack;
-	std::stack<int32_t>* callstack;
+	std::vector<std::string*> stringpool; // unsafe workaround pool that can cause some memory leaks, will be replaced with something better
 public:
 	Runtime(std::istream*);
 	void load();
+	MFrame* loadFrame();
 	void run();
+	static MFrame* findFrame(std::vector<MFrame*>, std::string);
+	void runFrame(std::vector<MFrame*>, std::string);
 };

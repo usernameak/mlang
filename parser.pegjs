@@ -55,7 +55,8 @@ call_statement = expr:call_expression {
     return expr;
 }
 
-expression "expression" = call_expression / add_expression / number / identifier
+expression "expression" = add_expression / noadd_expression
+noadd_expression "expression" = call_expression / number / identifier
 call_expression = name:identifier _ "(" args:(_ arg:expression _ {return arg})* ")" {
     return {
         type: "call_expression",
@@ -69,7 +70,7 @@ add_expression = left:mul_expression right:(_ op:("+" / "-") _ expr:mul_expressi
 mul_expression = left:prim_expression right:(_ op:("/" / "*") _ expr:prim_expression {return {op:op, expr:expr}})+ {
     return buildBinaryExpr(left, right);
 }  / prim_expression
-prim_expression = "(" _ expr:expression _ ")" {return expr} / number / identifier
+prim_expression = noadd_expression / "(" _ expr:expression _ ")" {return expr} / number / identifier
 
 block = "{" _n sm:statement* _n "}" {
     return {

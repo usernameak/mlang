@@ -1,4 +1,5 @@
 var fs = require("fs");
+var util = require("util");
 var parser = require("./parser");
 var Compiler = require("./compiler");
 
@@ -18,8 +19,6 @@ try {
 
 var compiler = new Compiler(pcode);
 
-console.log(compiler.compile());
+console.log(util.inspect(compiler.compile(), {depth: null, colors: true}));
 
 fs.writeFileSync(process.argv[3], Buffer.from(compiler.assemble()));
-
-//console.log(pcode);

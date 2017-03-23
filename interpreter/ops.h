@@ -35,7 +35,9 @@ struct MFstartOp : MOp {};
 
 struct MRetOp : MOp {};
 
-struct MPushfOp : MOp {};
+struct MPushsOp : MOp {
+	std::string str;
+};
 
 struct MCallOp : MOp {};
 
