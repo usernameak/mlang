@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
-project(MLang_Interpreter)
+project(mlang_interpreter)
 
 SET(CMAKE_BUILD_TYPE debug)
 
