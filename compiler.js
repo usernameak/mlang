@@ -83,7 +83,6 @@ Compiler.prototype.assemble = function() {
 	var bytecode = [];
 	for(var i = 0; i < this.frames.length; i++) {
 		bytecode.push.apply(bytecode, this.assembleFrame(this.frames[i]));
-		bytecode.push(0);
 	}
 	return bytecode;
 }
@@ -152,7 +151,6 @@ Compiler.prototype.assembleFrame = function(frame) {
 
 	for(var i = 0; i < frame.subframes.length; i++) {
 		bytecode.push.apply(bytecode, this.assembleFrame(frame.subframes[i]));
-		bytecode.push(0);
 	}
 
 	bytecode.push(0);
