@@ -29,7 +29,7 @@ assign_statement = assignee:identifier _ "=" _ value:expression {
         value: value
     }
 }
-function_statement = name:identifier _ "(" args:(_ arg:identifier _ {return arg})* ")" _ "=" _ block:block {
+function_statement = name:identifier _ "(" args:(arg1:identifier args2:(_ "," _ arg:identifier _ {return arg})* {return [arg1].concat(args2)}) _ ")" _ "=" _ block:block {
     return {
         type: "function_statement",
         name: name,
@@ -57,7 +57,7 @@ call_statement = expr:call_expression {
 
 expression "expression" = add_expression / noadd_expression
 noadd_expression "expression" = call_expression / number / identifier
-call_expression = name:identifier _ "(" args:(_ arg:expression _ {return arg})* ")" {
+call_expression = name:identifier _ "(" _ args:(arg1:expression args2:(_ "," _ arg:expression _ {return arg})* {return [arg1].concat(args2)}) _ ")" {
     return {
         type: "call_expression",
         name: name,
