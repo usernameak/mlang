@@ -191,18 +191,13 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
 				nativefunctions[((MRtclOp*)op)->name](rstack);
 			break;
 			case OPCODE_PUSHF:
-				/*stringpool.push_back(&((MPushsOp*)op)->str);
-				rstack->push(stringpool.size()-1);*/
 				rstack->push(new MFunctionValue(((MPushfOp*)op)->name));
 			break;
 			case OPCODE_PUSHS:
-				/*stringpool.push_back(&((MPushsOp*)op)->str);
-				rstack->push(stringpool.size()-1);*/
 				rstack->push(new MStringValue(((MPushsOp*)op)->str));
 			break;
 			case OPCODE_CALL:
 				str = *((std::string*) rstack->top()->castTo(MTYPE_FUNCTION)->get());
-				//val = rstack->top();
 				rstack->pop();
 				Runtime::runFrame(frame->subframes, str); // TODO: PARENT FRAME CALLS
 			break;
