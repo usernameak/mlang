@@ -16,7 +16,7 @@ struct MMulOp : MOp {};
 struct MDivOp : MOp {};
 
 struct MPushOp : MOp {
-	int32_t value;
+	double value;
 };
 
 struct MPushvOp : MOp {
@@ -31,7 +31,9 @@ struct MRtclOp : MOp {
 	std::string name;
 };
 
-struct MFstartOp : MOp {};
+struct MPushfOp : MOp {
+	std::string name;
+};
 
 struct MRetOp : MOp {};
 

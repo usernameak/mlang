@@ -4,6 +4,7 @@ project(mlang_interpreter)
 SET(CMAKE_BUILD_TYPE debug)
 
 add_executable(mlang
-	main.cpp
+	vals.cpp
 	runtime.cpp
+	main.cpp
 )

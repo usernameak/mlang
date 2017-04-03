@@ -7,18 +7,19 @@
 #include <string>
 #include <vector>
 #include "ops.h"
+#include "vals.h"
 
-std::map<std::string, void(*)(std::stack<int32_t>*)> nativefunctions;
+std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 
-void nf_output(std::stack<int32_t>* stack) {
-	int32_t val = stack->top();
+void nf_output(std::stack<MValue*>* stack) {
+	std::string val = *((std::string*) stack->top()->castTo(MTYPE_STRING)->get());
 	stack->pop();
 	std::cout << val << std::endl;
 }
 
 Runtime::Runtime(std::istream* _bcstream) {
 	bcstream = _bcstream;
-	rstack = new std::stack<int32_t>();
+	rstack = new std::stack<MValue*>();
 	NATIVEFUNC_SET("output", nf_output);
 }
 
@@ -67,7 +68,7 @@ MFrame* Runtime::loadFrame() {
 			case OPCODE_PUSH:{
 				MPushOp *pushop = new MPushOp();
 				pushop->type = curbyte;
-				bcstream->read((char*)&pushop->value, 4);
+				bcstream->read((char*)&pushop->value, 8);
 				frame->ops.push_back((MOp*)pushop);
 			}break;
 			case OPCODE_PUSHV:{
@@ -88,10 +89,11 @@ MFrame* Runtime::loadFrame() {
 				std::getline(*bcstream, rtclop->name, '\0');
 				frame->ops.push_back((MOp*)rtclop);
 			}break;
-			case OPCODE_FSTART:{
-				MFstartOp *fstartop = new MFstartOp();
-				fstartop->type = curbyte;
-				frame->ops.push_back((MOp*)fstartop);
+			case OPCODE_PUSHF:{
+				MPushfOp *pushfop = new MPushfOp();
+				pushfop->type = curbyte;
+				std::getline(*bcstream, pushfop->name, '\0');
+				frame->ops.push_back((MOp*)pushfop);
 			}break;
 			case OPCODE_RET:{
 				MRetOp *retop = new MRetOp();
@@ -143,58 +145,66 @@ void Runtime::run() {
 void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
 	MFrame* frame = findFrame(ldframes, framename);
 	for(MOp* op : frame->ops) {
-		int32_t val, a, b;
+		double a, b;
+		std::string str;
 		switch(op->type) {
 			case OPCODE_ADD:
-				b = rstack->top();
+
+				b = *((double*) rstack->top()->castTo(MTYPE_NUMBER)->get());
 				rstack->pop();
-				a = rstack->top();
+				a = *((double*) rstack->top()->castTo(MTYPE_NUMBER)->get());
 				rstack->pop();
-				rstack->push(a+b);
+				rstack->push(new MNumberValue(a+b));
 			break;
 			case OPCODE_SUB:
-				b = rstack->top();
+				b = *((double*) rstack->top()->castTo(MTYPE_NUMBER)->get());
 				rstack->pop();
-				a = rstack->top();
+				a = *((double*) rstack->top()->castTo(MTYPE_NUMBER)->get());
 				rstack->pop();
-				rstack->push(a-b);
+				rstack->push(new MNumberValue(a-b));
 			break;
 			case OPCODE_MUL:
-				b = rstack->top();
+				b = *((double*) rstack->top()->castTo(MTYPE_NUMBER)->get());
 				rstack->pop();
-				a = rstack->top();
+				a = *((double*) rstack->top()->castTo(MTYPE_NUMBER)->get());
 				rstack->pop();
-				rstack->push(a*b);
+				rstack->push(new MNumberValue(a*b));
 			break;
 			case OPCODE_DIV:
-				b = rstack->top();
+				b = *((double*) rstack->top()->castTo(MTYPE_NUMBER)->get());
 				rstack->pop();
-				a = rstack->top();
+				a = *((double*) rstack->top()->castTo(MTYPE_NUMBER)->get());
 				rstack->pop();
-				rstack->push(a/b);
+				rstack->push(new MNumberValue(a/b));
 			break;
 			case OPCODE_PUSH:
-				rstack->push(((MPushOp*)op)->value);
+				rstack->push(new MNumberValue(((MPushOp*)op)->value));
 			break;
 			case OPCODE_PUSHV:
 				rstack->push(frame->vars[((MPushvOp*)op)->name]);
 			break;
 			case OPCODE_ASSN:
-				val = rstack->top();
+				frame->vars[((MAssnOp*)op)->name] = rstack->top();
 				rstack->pop();
-				frame->vars[((MAssnOp*)op)->name] = val;
 			break;
 			case OPCODE_RTCL:
 				nativefunctions[((MRtclOp*)op)->name](rstack);
 			break;
+			case OPCODE_PUSHF:
+				/*stringpool.push_back(&((MPushsOp*)op)->str);
+				rstack->push(stringpool.size()-1);*/
+				rstack->push(new MFunctionValue(((MPushfOp*)op)->name));
+			break;
 			case OPCODE_PUSHS:
-				stringpool.push_back(&((MPushsOp*)op)->str);
-				rstack->push(stringpool.size()-1);
+				/*stringpool.push_back(&((MPushsOp*)op)->str);
+				rstack->push(stringpool.size()-1);*/
+				rstack->push(new MStringValue(((MPushsOp*)op)->str));
 			break;
 			case OPCODE_CALL:
-				val = rstack->top();
+				str = *((std::string*) rstack->top()->castTo(MTYPE_FUNCTION)->get());
+				//val = rstack->top();
 				rstack->pop();
-				Runtime::runFrame(frame->subframes, *stringpool[val]); // TODO: PARENT FRAME CALLS
+				Runtime::runFrame(frame->subframes, str); // TODO: PARENT FRAME CALLS
 			break;
 			case OPCODE_RET:
 			return;

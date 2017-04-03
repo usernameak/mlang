@@ -28,7 +28,7 @@ module.exports = (function() {
 				for(var j = 0; j < expr.args.length; j++) {
 					out += this.pushExpression(expr.args[j]);
 				}
-				out += "pushs " + expr.name.name + "\n";
+				out += "pushf " + expr.name.name + "\n";
 				out += "call\n";
 			break;
 		}
@@ -67,7 +67,7 @@ module.exports = (function() {
 				for(var j = 0; j < statement.args.length; j++) {
 					out += this.pushExpression(statement.args[j]);
 				}
-				out += "pushs " + statement.name.name + "\n";
+				out += "pushf " + statement.name.name + "\n";
 				out += "call\npop\n";
 			} else {
 
@@ -99,7 +99,7 @@ module.exports = (function() {
 			"pushv": 6,
 			"assn": 7,
 			"rtcl": 8,
-			"fstart": 9,
+			"pushf": 9,
 			"ret": 10,
 			"pushs": 11,
 			"call": 12,
@@ -107,8 +107,8 @@ module.exports = (function() {
 		}
 		var opfuncs = {
 			push: function(bc, num) {
-				var buf = Buffer.alloc(4);
-				buf.writeInt32LE(+num);
+				var buf = Buffer.alloc(8);
+				buf.writeDoubleLE(+num);
 				bc.push.apply(bc, buf.toJSON().data);
 			},
 			pushv: function(bc, name) {
@@ -116,6 +116,10 @@ module.exports = (function() {
 				bc.push(0);
 			},
 			pushs: function(bc, name) {
+				bc.push.apply(bc, Buffer.from(name).toJSON().data);
+				bc.push(0);
+			},
+			pushf: function(bc, name) {
 				bc.push.apply(bc, Buffer.from(name).toJSON().data);
 				bc.push(0);
 			},
