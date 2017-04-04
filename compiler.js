@@ -31,6 +31,9 @@ module.exports = (function() {
 				out += "pushf " + expr.name.name + "\n";
 				out += "call\n";
 			break;
+			case "string":
+				out += "pushs " + expr.val + "\n";
+			break;
 		}
 		return out;
 	};

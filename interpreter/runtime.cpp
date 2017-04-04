@@ -6,21 +6,36 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <dlfcn.h>
+
 #include "ops.h"
 #include "vals.h"
 
 std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 
-void nf_output(std::stack<MValue*>* stack) {
-	std::string val = *((std::string*) stack->top()->castTo(MTYPE_STRING)->get());
+void nf_nativeload(std::stack<MValue*>* stack) {
+	void *handle = dlopen(((std::string*) stack->top()->castTo(MTYPE_STRING)->get())->c_str(), RTLD_LAZY | RTLD_LOCAL);
+	if(!handle) {
+		std::cout << dlerror() << std::endl;
+		exit(1);
+	}
 	stack->pop();
-	std::cout << val << std::endl;
+	int count = *(int*) dlsym(handle, "mlang_nativefunctions_count");
+	char** list = *(char***) dlsym(handle, "mlang_nativefunctions_list");
+	for(int i = 0; i < count; i++) {
+		void (*func)(std::stack<MValue*>*) = (void(*)(std::stack<MValue*>*)) dlsym(handle, list[i]);
+		if(func == nullptr) {
+			std::cout << dlerror() << std::endl;
+			exit(1);
+		}
+		nativefunctions[(std::string) list[i]] = func;
+	}
 }
 
 Runtime::Runtime(std::istream* _bcstream) {
 	bcstream = _bcstream;
 	rstack = new std::stack<MValue*>();
-	NATIVEFUNC_SET("output", nf_output);
+	NATIVEFUNC_SET("nativeload", nf_nativeload);
 }
 
 void Runtime::load() {
