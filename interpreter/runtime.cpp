@@ -14,11 +14,21 @@
 std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 
 void nf_nativeload(std::stack<MValue*>* stack) {
-	void *handle = dlopen(((std::string*) stack->top()->castTo(MTYPE_STRING)->get())->c_str(), RTLD_LAZY | RTLD_LOCAL);
-	if(!handle) {
-		std::cout << dlerror() << std::endl;
-		exit(1);
+	std::string prefixes[] = {"./lib", "", ""};
+	std::string suffixes[] = {".so", ".so", ""};
+	void *handle = nullptr;
+	for(int i = 0; i < sizeof(prefixes)/sizeof(prefixes[0]); i++) {
+		handle = dlopen((prefixes[i]+(*(std::string*) stack->top()->castTo(MTYPE_STRING)->get())+suffixes[i]).c_str(), RTLD_LAZY | RTLD_LOCAL);
+		if(!handle) {
+			if(i == sizeof(prefixes)/sizeof(prefixes[0])-1) {
+				std::cout << dlerror() << std::endl;
+				exit(1);
+			}
+		} else {
+			break;
+		}
 	}
+	
 	stack->pop();
 	int count = *(int*) dlsym(handle, "mlang_nativefunctions_count");
 	char** list = *(char***) dlsym(handle, "mlang_nativefunctions_list");

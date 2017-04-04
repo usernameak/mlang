@@ -1,4 +1,4 @@
-$ nativeload "./libmlang_stdlib.so";
+$ nativeload "mlang_stdlib";
 b = 10;
 a(a, b) = {
 	return a+b+22;
