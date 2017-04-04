@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 2.6)
 project(mlang)
 
-add_subdirectory(interpreter .)
+SET(CMAKE_BUILD_TYPE debug)
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_subdirectory(interpreter)
