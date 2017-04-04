@@ -14,8 +14,8 @@
 std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 
 void nf_nativeload(std::stack<MValue*>* stack) {
-	std::string prefixes[] = {"./lib", "", ""};
-	std::string suffixes[] = {".so", ".so", ""};
+	std::string prefixes[] = {"./lib", "lib", "", ""};
+	std::string suffixes[] = {".so", ".so", ".so", ""};
 	void *handle = nullptr;
 	for(int i = 0; i < sizeof(prefixes)/sizeof(prefixes[0]); i++) {
 		handle = dlopen((prefixes[i]+(*(std::string*) stack->top()->castTo(MTYPE_STRING)->get())+suffixes[i]).c_str(), RTLD_LAZY | RTLD_LOCAL);
@@ -38,7 +38,7 @@ void nf_nativeload(std::stack<MValue*>* stack) {
 			std::cout << dlerror() << std::endl;
 			exit(1);
 		}
-		nativefunctions[(std::string) list[i]] = func;
+		nativefunctions[list[i]] = func;
 	}
 }
 
