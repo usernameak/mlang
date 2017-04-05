@@ -2,13 +2,19 @@ cmake_minimum_required(VERSION 2.6)
 
 include_directories(${CMAKE_SOURCE_DIR}/includes)
 
+if(WIN32)
+	set(mlang_shared_LIBS )
+else(WIN32)
+	set(mlang_shared_LIBS dl)
+endif(WIN32)
+
 add_library(mlang_shared SHARED
 	vals.cpp
 	runtime.cpp
 )
 set_target_properties(mlang_shared
 	PROPERTIES OUTPUT_NAME mlang)
-target_link_libraries(mlang_shared dl)
+target_link_libraries(mlang_shared ${mlang_shared_LIBS})
 
 add_executable(mlang
 	main.cpp
