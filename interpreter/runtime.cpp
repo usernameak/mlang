@@ -22,11 +22,13 @@ std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 		std::string prefixes[] = {"lib", "", ""};
 		std::string suffixes[] = {".dll", ".dll", ""};
 		HINSTANCE handle;
+		std::string libname = (*(std::string*) stack->top()->castTo(MTYPE_STRING)->get());
+		stack->pop();
 		for(int i = 0; i < sizeof(prefixes)/sizeof(prefixes[0]); i++) {
-			handle = LoadLibrary((prefixes[i]+(*(std::string*) stack->top()->castTo(MTYPE_STRING)->get())+suffixes[i]).c_str());
+			handle = LoadLibrary((prefixes[i]+libname+suffixes[i]).c_str());
 			if(!handle) {
 				if(i == sizeof(prefixes)/sizeof(prefixes[0])-1) {
-					std::cout << "Failed to load library " << (*(std::string*) stack->top()->castTo(MTYPE_STRING)->get()) << std::endl;
+					std::cout << "Failed to load library " << libname << std::endl;
 					exit(1);
 				}
 			} else {
@@ -34,13 +36,13 @@ std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 			}
 		}
 		
-		stack->pop();
+		
 		int count = *(int*) GetProcAddress(handle, "mlang_nativefunctions_count");
 		char** list = *(char***) GetProcAddress(handle, "mlang_nativefunctions_list");
 		for(int i = 0; i < count; i++) {
 			void (*func)(std::stack<MValue*>*) = (void(*)(std::stack<MValue*>*)) GetProcAddress(handle, list[i]);
 			if(func == nullptr) {
-				std::cout << "Failed to load library " << (*(std::string*) stack->top()->castTo(MTYPE_STRING)->get()) <<
+				std::cout << "Failed to load library " << libname <<
 					": function " << list[i] << " cannot be loaded" << std::endl;
 				exit(1);
 			}
