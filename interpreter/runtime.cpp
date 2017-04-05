@@ -6,41 +6,77 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <dlfcn.h>
+#ifdef _WIN32
+	#include <windows.h>
+#else
+	#include <dlfcn.h>
+#endif
 
 #include "ops.h"
 #include "vals.h"
 
 std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 
-void nf_nativeload(std::stack<MValue*>* stack) {
-	std::string prefixes[] = {"./lib", "lib", "", ""};
-	std::string suffixes[] = {".so", ".so", ".so", ""};
-	void *handle = nullptr;
-	for(int i = 0; i < sizeof(prefixes)/sizeof(prefixes[0]); i++) {
-		handle = dlopen((prefixes[i]+(*(std::string*) stack->top()->castTo(MTYPE_STRING)->get())+suffixes[i]).c_str(), RTLD_LAZY | RTLD_LOCAL);
-		if(!handle) {
-			if(i == sizeof(prefixes)/sizeof(prefixes[0])-1) {
+#ifdef _WIN32
+	void nf_nativeload(std::stack<MValue*>* stack) {
+		std::string prefixes[] = {"lib", "", ""};
+		std::string suffixes[] = {".dll", ".dll", ""};
+		HINSTANCE handle;
+		for(int i = 0; i < sizeof(prefixes)/sizeof(prefixes[0]); i++) {
+			handle = LoadLibrary((prefixes[i]+(*(std::string*) stack->top()->castTo(MTYPE_STRING)->get())+suffixes[i]).c_str());
+			if(!handle) {
+				if(i == sizeof(prefixes)/sizeof(prefixes[0])-1) {
+					std::cout << "Failed to load library " << (*(std::string*) stack->top()->castTo(MTYPE_STRING)->get()) << std::endl;
+					exit(1);
+				}
+			} else {
+				break;
+			}
+		}
+		
+		stack->pop();
+		int count = *(int*) GetProcAddress(handle, "mlang_nativefunctions_count");
+		char** list = *(char***) GetProcAddress(handle, "mlang_nativefunctions_list");
+		for(int i = 0; i < count; i++) {
+			void (*func)(std::stack<MValue*>*) = (void(*)(std::stack<MValue*>*)) GetProcAddress(handle, list[i]);
+			if(func == nullptr) {
+				std::cout << "Failed to load library " << (*(std::string*) stack->top()->castTo(MTYPE_STRING)->get()) <<
+					": function " << list[i] << " cannot be loaded" << std::endl;
+				exit(1);
+			}
+			nativefunctions[list[i]] = func;
+		}
+	}
+#else
+	void nf_nativeload(std::stack<MValue*>* stack) {
+		std::string prefixes[] = {"./lib", "lib", "", ""};
+		std::string suffixes[] = {".so", ".so", ".so", ""};
+		void *handle = nullptr;
+		for(int i = 0; i < sizeof(prefixes)/sizeof(prefixes[0]); i++) {
+			handle = dlopen((prefixes[i]+(*(std::string*) stack->top()->castTo(MTYPE_STRING)->get())+suffixes[i]).c_str(), RTLD_LAZY | RTLD_LOCAL);
+			if(!handle) {
+				if(i == sizeof(prefixes)/sizeof(prefixes[0])-1) {
+					std::cout << dlerror() << std::endl;
+					exit(1);
+				}
+			} else {
+				break;
+			}
+		}
+		
+		stack->pop();
+		int count = *(int*) dlsym(handle, "mlang_nativefunctions_count");
+		char** list = *(char***) dlsym(handle, "mlang_nativefunctions_list");
+		for(int i = 0; i < count; i++) {
+			void (*func)(std::stack<MValue*>*) = (void(*)(std::stack<MValue*>*)) dlsym(handle, list[i]);
+			if(func == nullptr) {
 				std::cout << dlerror() << std::endl;
 				exit(1);
 			}
-		} else {
-			break;
+			nativefunctions[list[i]] = func;
 		}
 	}
-	
-	stack->pop();
-	int count = *(int*) dlsym(handle, "mlang_nativefunctions_count");
-	char** list = *(char***) dlsym(handle, "mlang_nativefunctions_list");
-	for(int i = 0; i < count; i++) {
-		void (*func)(std::stack<MValue*>*) = (void(*)(std::stack<MValue*>*)) dlsym(handle, list[i]);
-		if(func == nullptr) {
-			std::cout << dlerror() << std::endl;
-			exit(1);
-		}
-		nativefunctions[list[i]] = func;
-	}
-}
+#endif
 
 Runtime::Runtime(std::istream* _bcstream) {
 	bcstream = _bcstream;
