@@ -1,3 +1,4 @@
 *.mo
 build
 node_modules
+compiler/parser.js

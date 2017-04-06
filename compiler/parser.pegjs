@@ -56,7 +56,7 @@ call_statement = expr:call_expression {
 }
 
 expression "expression" = add_expression / noadd_expression
-noadd_expression "expression" = call_expression / string / number / identifier
+noadd_expression "expression" = call_expression / string / number / boolean / identifier
 call_expression = name:identifier _ "(" _ args:(arg1:expression args2:(_ "," _ arg:expression _ {return arg})* {return [arg1].concat(args2)}) _ ")" {
     return {
         type: "call_expression",
@@ -70,7 +70,7 @@ add_expression = left:mul_expression right:(_ op:("+" / "-") _ expr:mul_expressi
 mul_expression = left:prim_expression right:(_ op:("/" / "*") _ expr:prim_expression {return {op:op, expr:expr}})+ {
     return buildBinaryExpr(left, right);
 }  / prim_expression
-prim_expression = noadd_expression / "(" _ expr:expression _ ")" {return expr} / string / number / identifier
+prim_expression = noadd_expression / "(" _ expr:expression _ ")" {return expr} / string / number / boolean / identifier
 
 block = "{" _n sm:statement* _n "}" {
     return {
@@ -85,6 +85,10 @@ string "string" = "\"" s:("\\\"" {return "\""} / "\\n" {return "\n"} / "\\t" {re
 number "number" = n:($("-"?([1-9][0-9]*) / "0")) {return {
     type: "number",
     val: +n
+}}
+boolean "boolean" = val:("true"/"false") {return {
+    type: "boolean",
+    val: val == "true" ? true : false
 }}
 identifier "identifier" = name:$([a-zA-Z_][a-zA-Z0-9_]*) {return {
     type: "identifier",

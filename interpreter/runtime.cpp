@@ -179,6 +179,12 @@ MFrame* Runtime::loadFrame() {
 				popop->type = curbyte;
 				frame->ops.push_back((MOp*)popop);
 			}break;
+			case OPCODE_PUSHB:{
+				MPushbOp *pushbop = new MPushbOp();
+				pushbop->type = curbyte;
+				bcstream->read((char*)&pushbop->value, 1);
+				frame->ops.push_back((MOp*)pushbop);
+			}break;
 		}
 	}
 
@@ -198,6 +204,7 @@ MFrame* Runtime::findFrame(std::vector<MFrame*> framev, std::string framename) {
 		}
 	}
 	std::cout << "Error: frame \"" + framename + "\" not found" << std::endl;
+	exit(2);
 	return nullptr;
 }
 
@@ -268,6 +275,9 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
 			return;
 			case OPCODE_POP:
 				rstack->pop();
+			break;
+			case OPCODE_PUSHB:
+				rstack->push(new MBooleanValue(((MPushbOp*)op)->value));
 			break;
 		}
 	}

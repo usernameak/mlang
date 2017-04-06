@@ -23,6 +23,7 @@ MValue* MNullValue::castTo(MType type) {
 		case MTYPE_NUMBER: return new MNumberValue(0);
 		case MTYPE_STRING: return new MStringValue("null");
 		case MTYPE_FUNCTION: return nullptr;
+		case MTYPE_BOOL: return new MBooleanValue(false);
 	}
 }
 
@@ -38,6 +39,7 @@ MValue* MNumberValue::castTo(MType type) {
 		case MTYPE_NUMBER: return this;
 		case MTYPE_STRING: return new MStringValue(doubleToString(val));
 		case MTYPE_FUNCTION: return nullptr;
+		case MTYPE_BOOL: return new MBooleanValue(val == 0 ? false : true);
 	}
 }
 
@@ -53,6 +55,7 @@ MValue* MStringValue::castTo(MType type) {
 		case MTYPE_NUMBER: return new MNumberValue(std::stod(val));
 		case MTYPE_STRING: return this;
 		case MTYPE_FUNCTION: return nullptr;
+		case MTYPE_BOOL: return new MBooleanValue(!val.empty());
 	}
 }
 
@@ -68,9 +71,26 @@ MValue* MFunctionValue::castTo(MType type) {
 		case MTYPE_NUMBER: return nullptr;
 		case MTYPE_STRING: return nullptr;
 		case MTYPE_FUNCTION: return this;
+		case MTYPE_BOOL: return new MBooleanValue(true);
 	}
 }
 
 void* MFunctionValue::get() {
 	return &fname;
+}
+
+MBooleanValue::MBooleanValue(bool val) : val(val) {}
+
+MValue* MBooleanValue::castTo(MType type) {
+	switch(type) {
+		case MTYPE_NULL: return new MNullValue;
+		case MTYPE_NUMBER: return new MNumberValue(val ? 1 : 0);
+		case MTYPE_STRING: return new MStringValue(val ? "true" : "false");
+		case MTYPE_FUNCTION: return nullptr;
+		case MTYPE_BOOL: return this;
+	}
+}
+
+void* MBooleanValue::get() {
+	return &val;
 }

@@ -6,7 +6,8 @@ enum MType {
 	MTYPE_NULL,
 	MTYPE_NUMBER,
 	MTYPE_STRING,
-	MTYPE_FUNCTION
+	MTYPE_FUNCTION,
+	MTYPE_BOOL
 };
 
 class MValue {
@@ -48,6 +49,16 @@ private:
 public:
 	static const MType type = MTYPE_FUNCTION;
 	MFunctionValue(std::string);
+	MValue* castTo(MType);
+	void* get();
+};
+
+class MBooleanValue : public MValue {
+private:
+	bool val;
+public:
+	static const MType type = MTYPE_BOOL;
+	MBooleanValue(bool);
 	MValue* castTo(MType);
 	void* get();
 };

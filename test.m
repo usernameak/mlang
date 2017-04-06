@@ -9,3 +9,5 @@ c(s) = {
 a(b, 1);
 $ nf_output a(b, 1);
 $ nf_output c(b);
+$ nf_output true;
+$ nf_output false;

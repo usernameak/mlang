@@ -16,7 +16,8 @@ enum Opcode {
 	OPCODE_RET = 10,
 	OPCODE_PUSHS = 11,
 	OPCODE_CALL = 12,
-	OPCODE_POP = 13
+	OPCODE_POP = 13,
+	OPCODE_PUSHB = 14
 };
 
 struct MOp {
@@ -60,3 +61,7 @@ struct MPushsOp : MOp {
 struct MCallOp : MOp {};
 
 struct MPopOp : MOp {};
+
+struct MPushbOp : MOp {
+	bool value;
+};

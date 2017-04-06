@@ -3,6 +3,7 @@
 #include <chrono>
 #include <cstring>
 #include "runtime.h"
+#include "vals.h"
 int main(int argc, char **argv) {
 	if(argc < 2 || argc > 3) {
 		std::cerr << std::flush << "usage: mlang [-v] <compiled source name>" << std::endl;

@@ -34,6 +34,9 @@ module.exports = (function() {
 			case "string":
 				out += "pushs " + expr.val + "\n";
 			break;
+			case "boolean":
+				out += "pushb " + expr.val + "\n";
+			break;
 		}
 		return out;
 	};
@@ -106,13 +109,17 @@ module.exports = (function() {
 			"ret": 10,
 			"pushs": 11,
 			"call": 12,
-			"pop": 13
+			"pop": 13,
+			"pushb": 14
 		}
 		var opfuncs = {
 			push: function(bc, num) {
 				var buf = Buffer.alloc(8);
 				buf.writeDoubleLE(+num);
 				bc.push.apply(bc, buf.toJSON().data);
+			},
+			pushb: function(bc, val) {
+				bc.push(val == "true" ? 1 : 0);
 			},
 			pushv: function(bc, name) {
 				bc.push.apply(bc, Buffer.from(name).toJSON().data);
