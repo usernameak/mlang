@@ -15,7 +15,17 @@ module.exports = (function() {
 					"+": "add\n",
 					"-": "sub\n",
 					"*": "mul\n",
-					"/": "div\n"
+					"/": "div\n",
+					"<=": "leq\n",
+					">": "grt\n",
+					">=": "geq\n",
+					"<": "less\n",
+					"==": "eq\n",
+					"!=": "neq\n",
+					"<<": "lsh\n",
+					">>": "rsh\n",
+					"&": "and\n",
+					"|": "or\n"
 				}[expr.op];
 			break;
 			case "number":
@@ -110,7 +120,17 @@ module.exports = (function() {
 			"pushs": 11,
 			"call": 12,
 			"pop": 13,
-			"pushb": 14
+			"pushb": 14,
+			"leq": 15,
+			"grt": 16,
+			"geq": 17,
+			"less": 18,
+			"eq": 19,
+			"neq": 20,
+			"lsh": 21,
+			"rsh": 22,
+			"and": 23,
+			"or": 24
 		}
 		var opfuncs = {
 			push: function(bc, num) {
@@ -154,7 +174,7 @@ module.exports = (function() {
 			var elems = lines[i].split(" ");
 			bytecode.push(opcodes[elems[0]]);
 			if(elems[0] in opfuncs) {
-				var args = [bytecode];
+				var args = [bytecode, elems.slice(1).join(" ")];
 				for(var j = 1; j < elems.length; j++) {
 					args.push(elems[j]);
 				}

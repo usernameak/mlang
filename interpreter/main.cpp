@@ -29,6 +29,6 @@ int main(int argc, char **argv) {
 	rt->run();
 	if(verbose) {
 		std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-		std::cout << "Run time: " << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << " nanoseconds" << std::endl;
+		std::cout << "Run time: " << std::chrono::duration_cast<std::chrono::microseconds> (end - begin).count() << " microseconds" << std::endl;
 	}
 }

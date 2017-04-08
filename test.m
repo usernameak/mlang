@@ -10,4 +10,6 @@ a(b, 1);
 $ nf_output a(b, 1);
 $ nf_output c(b);
 $ nf_output true;
-$ nf_output false;
+$ nf_output false | true;
+$ nf_output true & false;
+$ nf_output "Hello, " + "world!";

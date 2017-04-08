@@ -110,80 +110,94 @@ MFrame* Runtime::loadFrame() {
 		switch(curbyte) {
 			case OPCODE_ADD:{
 				MAddOp *addop = new MAddOp();
-				addop->type = curbyte;
+				addop->type = (Opcode) curbyte;
 				frame->ops.push_back((MOp*)addop);
 			}break;
 			case OPCODE_SUB:{
 				MSubOp *subop = new MSubOp();
-				subop->type = curbyte;
+				subop->type = (Opcode) curbyte;
 				frame->ops.push_back((MOp*)subop);
 			}break;
 			case OPCODE_MUL:{
 				MMulOp *mulop = new MMulOp();
-				mulop->type = curbyte;
+				mulop->type = (Opcode) curbyte;
 				frame->ops.push_back((MOp*)mulop);
 			}break;
 			case OPCODE_DIV:{
 				MDivOp *divop = new MDivOp();
-				divop->type = curbyte;
+				divop->type = (Opcode) curbyte;
 				frame->ops.push_back((MOp*)divop);
 			}break;
 			case OPCODE_PUSH:{
 				MPushOp *pushop = new MPushOp();
-				pushop->type = curbyte;
+				pushop->type = (Opcode) curbyte;
 				bcstream->read((char*)&pushop->value, 8);
 				frame->ops.push_back((MOp*)pushop);
 			}break;
 			case OPCODE_PUSHV:{
 				MPushvOp *pushvop = new MPushvOp();
-				pushvop->type = curbyte;
+				pushvop->type = (Opcode) curbyte;
 				std::getline(*bcstream, pushvop->name, '\0');
 				frame->ops.push_back((MOp*)pushvop);
 			}break;
 			case OPCODE_ASSN:{
 				MAssnOp *assnop = new MAssnOp();
-				assnop->type = curbyte;
+				assnop->type = (Opcode) curbyte;
 				std::getline(*bcstream, assnop->name, '\0');
 				frame->ops.push_back((MOp*)assnop);
 			}break;
 			case OPCODE_RTCL:{
 				MRtclOp *rtclop = new MRtclOp();
-				rtclop->type = curbyte;
+				rtclop->type = (Opcode) curbyte;
 				std::getline(*bcstream, rtclop->name, '\0');
 				frame->ops.push_back((MOp*)rtclop);
 			}break;
 			case OPCODE_PUSHF:{
 				MPushfOp *pushfop = new MPushfOp();
-				pushfop->type = curbyte;
+				pushfop->type = (Opcode) curbyte;
 				std::getline(*bcstream, pushfop->name, '\0');
 				frame->ops.push_back((MOp*)pushfop);
 			}break;
 			case OPCODE_RET:{
 				MRetOp *retop = new MRetOp();
-				retop->type = curbyte;
+				retop->type = (Opcode) curbyte;
 				frame->ops.push_back((MOp*)retop);
 			}break;
 			case OPCODE_PUSHS:{
 				MPushsOp *pushsop = new MPushsOp();
-				pushsop->type = curbyte;
+				pushsop->type = (Opcode) curbyte;
 				std::getline(*bcstream, pushsop->str, '\0');
 				frame->ops.push_back((MOp*)pushsop);
 			}break;
 			case OPCODE_CALL:{
 				MCallOp *callop = new MCallOp();
-				callop->type = curbyte;
+				callop->type = (Opcode) curbyte;
 				frame->ops.push_back((MOp*)callop);
 			}break;
 			case OPCODE_POP:{
 				MPopOp *popop = new MPopOp();
-				popop->type = curbyte;
+				popop->type = (Opcode) curbyte;
 				frame->ops.push_back((MOp*)popop);
 			}break;
 			case OPCODE_PUSHB:{
 				MPushbOp *pushbop = new MPushbOp();
-				pushbop->type = curbyte;
+				pushbop->type = (Opcode) curbyte;
 				bcstream->read((char*)&pushbop->value, 1);
 				frame->ops.push_back((MOp*)pushbop);
+			}break;
+			case OPCODE_LEQ:
+			case OPCODE_GRT:
+			case OPCODE_GEQ:
+			case OPCODE_LESS:
+			case OPCODE_EQ:
+			case OPCODE_NEQ:
+			case OPCODE_LSH:
+			case OPCODE_RSH:
+			case OPCODE_AND:
+			case OPCODE_OR:{
+				MOp *op = new MOp();
+				op->type = (Opcode) curbyte;
+				frame->ops.push_back(op);
 			}break;
 		}
 	}
@@ -216,9 +230,10 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
 	MFrame* frame = findFrame(ldframes, framename);
 	for(MOp* op : frame->ops) {
 		double a, b;
+		MValue *mv1, *mv2;
 		std::string str;
 		switch(op->type) {
-			case OPCODE_ADD:
+			/*case OPCODE_ADD:
 
 				b = *((double*) rstack->top()->castTo(MTYPE_NUMBER)->get());
 				rstack->pop();
@@ -246,7 +261,7 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
 				a = *((double*) rstack->top()->castTo(MTYPE_NUMBER)->get());
 				rstack->pop();
 				rstack->push(new MNumberValue(a/b));
-			break;
+			break;*/
 			case OPCODE_PUSH:
 				rstack->push(new MNumberValue(((MPushOp*)op)->value));
 			break;
@@ -278,6 +293,26 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
 			break;
 			case OPCODE_PUSHB:
 				rstack->push(new MBooleanValue(((MPushbOp*)op)->value));
+			break;
+			case OPCODE_ADD:
+			case OPCODE_SUB:
+			case OPCODE_MUL:
+			case OPCODE_DIV:
+			case OPCODE_LEQ:
+			case OPCODE_GRT:
+			case OPCODE_GEQ:
+			case OPCODE_LESS:
+			case OPCODE_EQ:
+			case OPCODE_NEQ:
+			case OPCODE_AND:
+			case OPCODE_OR:
+			case OPCODE_LSH:
+			case OPCODE_RSH:
+				mv2 = rstack->top();
+				rstack->pop();
+				mv1 = rstack->top();
+				rstack->pop();
+				rstack->push(mv1->operate(op->type, mv2));
 			break;
 		}
 	}

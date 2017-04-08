@@ -9,8 +9,13 @@ else(WIN32)
 endif(WIN32)
 
 add_library(mlang_shared SHARED
-	vals.cpp
 	runtime.cpp
+	values/boolean.cpp
+	values/string.cpp
+	values/function.cpp
+	values/number.cpp
+	values/base.cpp
+	values/null.cpp
 )
 set_target_properties(mlang_shared
 	PROPERTIES OUTPUT_NAME mlang)

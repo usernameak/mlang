@@ -17,19 +17,26 @@ enum Opcode {
 	OPCODE_PUSHS = 11,
 	OPCODE_CALL = 12,
 	OPCODE_POP = 13,
-	OPCODE_PUSHB = 14
+	OPCODE_PUSHB = 14,
+	OPCODE_LEQ = 15,
+	OPCODE_GRT = 16,
+	OPCODE_GEQ = 17,
+	OPCODE_LESS = 18,
+	OPCODE_EQ = 19,
+	OPCODE_NEQ = 20,
+	OPCODE_LSH = 21,
+	OPCODE_RSH = 22,
+	OPCODE_AND = 23,
+	OPCODE_OR = 24
 };
 
 struct MOp {
-	int type;
+	Opcode type;
 };
 
 struct MAddOp : MOp {};
-
 struct MSubOp : MOp {};
-
 struct MMulOp : MOp {};
-
 struct MDivOp : MOp {};
 
 struct MPushOp : MOp {
@@ -65,3 +72,14 @@ struct MPopOp : MOp {};
 struct MPushbOp : MOp {
 	bool value;
 };
+
+struct MLeqOp : MOp {};
+struct MGrtOp : MOp {};
+struct MGeqOp : MOp {};
+struct MLessOp : MOp {};
+struct MEqOp : MOp {};
+struct MNeqOp : MOp {};
+struct MLshOp : MOp {};
+struct MRshOp : MOp {};
+struct MAndOp : MOp {};
+struct MOrOp : MOp {};

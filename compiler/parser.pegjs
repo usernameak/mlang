@@ -18,8 +18,8 @@
     }
 }
 
-code = statement*
-statement = _n s:(assign_statement / return_statement / runtime_statement / function_statement / call_statement) _n ";" {
+code = _n s:statement* _n {return s}
+statement = _n s:(if_statement / assign_statement / return_statement / runtime_statement / function_statement / call_statement) _n ";" {
     return s;
 }
 assign_statement = assignee:identifier _ "=" _ value:expression {
@@ -29,7 +29,7 @@ assign_statement = assignee:identifier _ "=" _ value:expression {
         value: value
     }
 }
-function_statement = name:identifier _ "(" args:(arg1:identifier args2:(_ "," _ arg:identifier _ {return arg})* {return [arg1].concat(args2)}) _ ")" _ "=" _ block:block {
+function_statement = name:identifier _ "(" _ args:(arg1:identifier args2:(_ "," _ arg:identifier _ {return arg})* {return [arg1].concat(args2)}) _ ")" _ "=" _ block:block {
     return {
         type: "function_statement",
         name: name,
@@ -54,8 +54,20 @@ call_statement = expr:call_expression {
     expr.type = "call_statement";
     return expr;
 }
+if_statement = "if" _ "(" _ cond:expression _ ")" _ thenBlock:block elseBlock:( _ "else" _ b:block {return b})? {
+    return elseBlock ? {
+        type: "if_statement",
+        condition: cond,
+        thenBlock: thenBlock,
+        elseBlock: elseBlock
+    } : {
+        type: "if_statement",
+        condition: cond,
+        thenBlock: thenBlock
+    }
+}
 
-expression "expression" = add_expression / noadd_expression
+expression "expression" = bwise_expression / noadd_expression
 noadd_expression "expression" = call_expression / string / number / boolean / identifier
 call_expression = name:identifier _ "(" _ args:(arg1:expression args2:(_ "," _ arg:expression _ {return arg})* {return [arg1].concat(args2)}) _ ")" {
     return {
@@ -64,6 +76,12 @@ call_expression = name:identifier _ "(" _ args:(arg1:expression args2:(_ "," _ a
         args: args
     }
 }
+bwise_expression = left:cmp_expression right:(_ op:("<<" / ">>" / "&" / "|") _ expr:cmp_expression {return {op:op, expr:expr}})+ {
+    return buildBinaryExpr(left, right);
+} / cmp_expression
+cmp_expression = left:add_expression right:(_ op:("<" / ">" / ">=" / "<=" / "!=" / "==") _ expr:add_expression {return {op:op, expr:expr}})+ {
+    return buildBinaryExpr(left, right);
+} / add_expression
 add_expression = left:mul_expression right:(_ op:("+" / "-") _ expr:mul_expression {return {op:op, expr:expr}})+ {
     return buildBinaryExpr(left, right);
 } / mul_expression

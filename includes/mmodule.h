@@ -1,7 +1,7 @@
 #ifdef _WIN32
 
 	#define mlang_module(funcnames...) extern "C" {\
-		__declspec(dllexport) char** mlang_nativefunctions_list = (char *[]){funcnames};\
+		__declspec(dllexport) const char** mlang_nativefunctions_list = (const char *[]){funcnames};\
 		__declspec(dllexport) int mlang_nativefunctions_count = sizeof(mlang_nativefunctions_list)/sizeof(mlang_nativefunctions_list[0]);\
 	}\
 	extern "C"
@@ -11,7 +11,7 @@
 #else
 
 	#define mlang_module(funcnames...) extern "C" {\
-		char** mlang_nativefunctions_list = (char *[]){funcnames};\
+		const char** mlang_nativefunctions_list = (const char *[]){funcnames};\
 		int mlang_nativefunctions_count = sizeof(mlang_nativefunctions_list)/sizeof(mlang_nativefunctions_list[0]);\
 	}\
 	extern "C"
