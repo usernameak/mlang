@@ -35,8 +35,8 @@ std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 				break;
 			}
 		}
-		
-		
+
+
 		int count = *(int*) GetProcAddress(handle, "mlang_nativefunctions_count");
 		char** list = *(char***) GetProcAddress(handle, "mlang_nativefunctions_list");
 		for(int i = 0; i < count; i++) {
@@ -65,7 +65,7 @@ std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 				break;
 			}
 		}
-		
+
 		stack->pop();
 		int count = *(int*) dlsym(handle, "mlang_nativefunctions_count");
 		char** list = *(char***) dlsym(handle, "mlang_nativefunctions_list");
@@ -99,11 +99,11 @@ MFrame* Runtime::loadFrame() {
 	uint8_t curbyte;
 
 	std::getline(*bcstream, frame->name, '\0');
-	
+
 	if(frame->name.empty()) {
 		return nullptr;
 	}
-	
+
 	while(true) {
 		bcstream->read((char*)&curbyte, 1);
 		if(curbyte==0) break;
@@ -185,6 +185,12 @@ MFrame* Runtime::loadFrame() {
 				bcstream->read((char*)&pushbop->value, 1);
 				frame->ops.push_back((MOp*)pushbop);
 			}break;
+			case OPCODE_JN:{
+				MJnOp *jnop = new MJnOp();
+				jnop->type = (Opcode) curbyte;
+				bcstream->read((char*)&jnop->ptr, 4);
+				frame->ops.push_back((MOp*)jnop);
+			}break;
 			case OPCODE_LEQ:
 			case OPCODE_GRT:
 			case OPCODE_GEQ:
@@ -228,7 +234,8 @@ void Runtime::run() {
 
 void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
 	MFrame* frame = findFrame(ldframes, framename);
-	for(MOp* op : frame->ops) {
+	for(auto i = frame->ops.begin(); i < frame->ops.end(); i++) {
+		MOp* op = *i;
 		double a, b;
 		MValue *mv1, *mv2;
 		std::string str;
@@ -313,6 +320,14 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
 				mv1 = rstack->top();
 				rstack->pop();
 				rstack->push(mv1->operate(op->type, mv2));
+			break;
+			case OPCODE_JN:
+				uint32_t ptr = static_cast<MJnOp*>(op)->ptr;
+				bool condition = *((bool*) rstack->top()->castTo(MTYPE_BOOL)->get());
+				rstack->pop();
+				if(!condition) {
+					i = frame->ops.begin() + ptr - 1;
+				}
 			break;
 		}
 	}

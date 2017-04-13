@@ -4,6 +4,7 @@ module.exports = (function() {
 		this.vars = {};
 		this.equations = {};
 		this.frames = [];
+		this.curlabel = 0;
 	}
 	Compiler.prototype.pushExpression = function(expr) {
 		var out = "";
@@ -85,6 +86,14 @@ module.exports = (function() {
 				}
 				out += "pushf " + statement.name.name + "\n";
 				out += "call\npop\n";
+			} else if(statement.type == "if_statement") {
+				out += this.pushExpression(statement.condition);
+				var strt = out.split("\n").length-2
+				out += "jn L" + this.curlabel + "\n";
+				var ifframe = this.compileFrame("L"+this.curlabel, [], statement.thenBlock.statements);
+				out += ifframe.code;
+				subframes.push.apply(subframes, ifframe.subframes);
+				out += ":L" + (this.curlabel++) + "\n";
 			} else {
 
 			}
@@ -105,6 +114,7 @@ module.exports = (function() {
 	}
 
 	Compiler.prototype.assembleFrame = function(frame) {
+		var lines = frame.code.replace(/^\s*$/g, '').split("\n");
 		var bytecode = [];
 		var opcodes = {
 			"add": 1,
@@ -130,7 +140,8 @@ module.exports = (function() {
 			"lsh": 21,
 			"rsh": 22,
 			"and": 23,
-			"or": 24
+			"or": 24,
+			"jn": 25
 		}
 		var opfuncs = {
 			push: function(bc, num) {
@@ -160,18 +171,32 @@ module.exports = (function() {
 			rtcl: function(bc, name) {
 				bc.push.apply(bc, Buffer.from(name).toJSON().data);
 				bc.push(0);
+			},
+			jn: function(bc, label) {
+				for(var i = 0; i < lines.length; i++) {
+					var elems = lines[i].split(" ");
+					if(elems[0].charAt(0) == ":" && elems[0].slice(1) == label) {
+						var buf = Buffer.alloc(4);
+						buf.writeInt32LE(i);
+						bc.push.apply(bc, buf.toJSON().data);
+						return;
+					}
+				}
+				console.log("Error assembling frame \"" + frame.name + "\": label \"" + label + "\" not found")
 			}
 		}
-		
+
 		bytecode.push.apply(bytecode, Buffer.from(frame.name).toJSON().data);
 		bytecode.push(0);
 
-		var lines = frame.code.split("\n");
 		for(var i = 0; i < lines.length; i++) {
 			if(!lines[i].replace(/\s/g, '').length) {
 				continue;
 			}
 			var elems = lines[i].split(" ");
+			if(elems[0].charAt(0) == ":") {
+				continue;
+			}
 			bytecode.push(opcodes[elems[0]]);
 			if(elems[0] in opfuncs) {
 				var args = [bytecode, elems.slice(1).join(" ")];

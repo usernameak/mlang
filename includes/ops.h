@@ -27,7 +27,8 @@ enum Opcode {
 	OPCODE_LSH = 21,
 	OPCODE_RSH = 22,
 	OPCODE_AND = 23,
-	OPCODE_OR = 24
+	OPCODE_OR = 24,
+	OPCODE_JN = 25
 };
 
 struct MOp {
@@ -83,3 +84,7 @@ struct MLshOp : MOp {};
 struct MRshOp : MOp {};
 struct MAndOp : MOp {};
 struct MOrOp : MOp {};
+
+struct MJnOp : MOp {
+	uint32_t ptr;
+};
