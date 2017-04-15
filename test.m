@@ -8,8 +8,10 @@ c(s) = {
 };
 a(b, 1);
 
-if(0 == 1) {
+if(1 == 1) {
 	$ nf_output "yahooo";
+} else {
+	$ nf_output "fail";
 };
 
 $ nf_output a(b, 1);

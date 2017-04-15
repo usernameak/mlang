@@ -4,7 +4,7 @@
   "description": "M programming language compiler, written in JavaScript",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "install": "pegjs -o parser.js parser.pegjs"
   },
   "author": "",
   "license": "BSD-4-Clause",
@@ -14,7 +14,7 @@
   "devDependencies": {
     "pegjs": "^0.10.0"
   },
-  "scripts": {
-  	"install": "pegjs -o parser.js parser.pegjs"
+  "dependencies": {
+    "uuid": "^3.0.1"
   }
 }

@@ -1,0 +1,4 @@
+"build/mlang":
+	path: "build/mlang"
+	args: ["test.mo"]
+	cwd: "build"

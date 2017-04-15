@@ -1,4 +1,9 @@
 module.exports = (function() {
+	var crypto = require("crypto");
+	var namegen = function () {
+		var buf = crypto.randomBytes(16);
+		return '_' + buf.toString("hex");
+	};
 	var Compiler = function(pcode) {
 		this.pcode = pcode;
 		this.vars = {};
@@ -93,7 +98,15 @@ module.exports = (function() {
 				var ifframe = this.compileFrame("L"+this.curlabel, [], statement.thenBlock.statements);
 				out += ifframe.code;
 				subframes.push.apply(subframes, ifframe.subframes);
+				out += "jmp L" + (this.curlabel + 1) + "\n";
 				out += ":L" + (this.curlabel++) + "\n";
+				if(statement.elseBlock) {
+					var elseframe = this.compileFrame("L"+this.curlabel, [], statement.elseBlock.statements);
+					out += elseframe.code;
+					subframes.push.apply(subframes, elseframe.subframes);
+					out += ":L" + (this.curlabel++) + "\n";
+				}
+
 			} else {
 
 			}
@@ -141,7 +154,8 @@ module.exports = (function() {
 			"rsh": 22,
 			"and": 23,
 			"or": 24,
-			"jn": 25
+			"jn": 25,
+			"jmp": 26
 		}
 		var opfuncs = {
 			push: function(bc, num) {
@@ -173,6 +187,18 @@ module.exports = (function() {
 				bc.push(0);
 			},
 			jn: function(bc, label) {
+				for(var i = 0; i < lines.length; i++) {
+					var elems = lines[i].split(" ");
+					if(elems[0].charAt(0) == ":" && elems[0].slice(1) == label) {
+						var buf = Buffer.alloc(4);
+						buf.writeInt32LE(i);
+						bc.push.apply(bc, buf.toJSON().data);
+						return;
+					}
+				}
+				console.log("Error assembling frame \"" + frame.name + "\": label \"" + label + "\" not found")
+			},
+			jmp: function(bc, label) {
 				for(var i = 0; i < lines.length; i++) {
 					var elems = lines[i].split(" ");
 					if(elems[0].charAt(0) == ":" && elems[0].slice(1) == label) {
