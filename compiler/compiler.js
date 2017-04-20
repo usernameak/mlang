@@ -10,6 +10,7 @@ module.exports = (function() {
 		this.equations = {};
 		this.frames = [];
 		this.curlabel = 0;
+		this.names = {};
 	}
 	Compiler.prototype.pushExpression = function(expr) {
 		var out = "";
@@ -44,7 +45,7 @@ module.exports = (function() {
 				for(var j = 0; j < expr.args.length; j++) {
 					out += this.pushExpression(expr.args[j]);
 				}
-				out += "pushf " + expr.name.name + "\n";
+				out += "pushf " + this.names[expr.name.name] + "\n";
 				out += "call\n";
 			break;
 			case "string":
@@ -62,7 +63,7 @@ module.exports = (function() {
 		return this.frames;
 	}
 
-	Compiler.prototype.compileFrame = function(name, args, code) {
+	Compiler.prototype.compileFrame = function(name, args, code, dontUseReturnStub) {
 		var subframes = [];
 		var out = "";
 		for(var i = args.length-1; i >= 0; i--) {
@@ -75,8 +76,9 @@ module.exports = (function() {
 				out += this.pushExpression(statement.value);
 				out += "assn " + statement.assignee.name + "\n";
 			} else if(statement.type == "function_statement") {
-				var ff = this.compileFrame(statement.name.name, statement.args.map(a=>a.name), statement.block.statements);
-				subframes.push(ff);
+				this.names[statement.name.name] = namegen();
+				var ff = this.compileFrame(this.names[statement.name.name], statement.args.map(a=>a.name), statement.block.statements);
+				this.frames.push(ff);
 			} else if(statement.type == "return_statement") {
 				out += this.pushExpression(statement.val);
 				out += "ret\n";
@@ -89,19 +91,19 @@ module.exports = (function() {
 				for(var j = 0; j < statement.args.length; j++) {
 					out += this.pushExpression(statement.args[j]);
 				}
-				out += "pushf " + statement.name.name + "\n";
+				out += "pushf " + this.names[statement.name.name] + "\n";
 				out += "call\npop\n";
 			} else if(statement.type == "if_statement") {
 				out += this.pushExpression(statement.condition);
 				var strt = out.split("\n").length-2
 				out += "jn L" + this.curlabel + "\n";
-				var ifframe = this.compileFrame("L"+this.curlabel, [], statement.thenBlock.statements);
+				var ifframe = this.compileFrame("L"+this.curlabel, [], statement.thenBlock.statements, true);
 				out += ifframe.code;
 				subframes.push.apply(subframes, ifframe.subframes);
 				out += "jmp L" + (this.curlabel + 1) + "\n";
 				out += ":L" + (this.curlabel++) + "\n";
 				if(statement.elseBlock) {
-					var elseframe = this.compileFrame("L"+this.curlabel, [], statement.elseBlock.statements);
+					var elseframe = this.compileFrame("L"+this.curlabel, [], statement.elseBlock.statements, true);
 					out += elseframe.code;
 					subframes.push.apply(subframes, elseframe.subframes);
 					out += ":L" + (this.curlabel++) + "\n";
@@ -111,6 +113,7 @@ module.exports = (function() {
 
 			}
 		}
+		if(!dontUseReturnStub) out += "push 0\nret\n";
 		return {
 			name: name,
 			code: out,

@@ -297,7 +297,7 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
 			case OPCODE_CALL:
 				str = *((std::string*) rstack->top()->castTo(MTYPE_FUNCTION)->get());
 				rstack->pop();
-				Runtime::runFrame(frame->subframes, str); // TODO: PARENT FRAME CALLS
+				Runtime::runFrame(this->frames, str); // TODO: PARENT FRAME CALLS
 			break;
 			case OPCODE_RET:
 			return;
