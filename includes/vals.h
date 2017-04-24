@@ -84,6 +84,7 @@ class MMapValue : public MValue {
 private:
 	std::unordered_map<std::string, MValue*> val;
 public:
+	MMapValue();
 	static const MType type = MTYPE_MAP;
 	MValue* castTo(MType);
 	void* get();

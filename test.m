@@ -9,15 +9,15 @@ c(s) = {
 a(b, 1);
 
 if(1 == 1) {
-	$ nf_output "yahooo";
+	print("yahooo");
 } else {
-	$ nf_output "fail";
+	print("fail");
 };
 
-$ nf_output a(b, 1);
-$ nf_output c(b);
-$ nf_output true;
-$ nf_output false | true;
-$ nf_output true & false;
-$ nf_output "Hello, " + "world!";
+print(a(b, 1));
+print(c(b));
+print(true);
+print(false | true);
+print(true & false);
+print("Hello, " + "world!");
 print("HW2");

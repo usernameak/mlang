@@ -1,6 +1,10 @@
 #include "vals.h"
 #include "ops.h"
 
+MMapValue::MMapValue() {
+
+}
+
 MValue* MMapValue::castTo(MType type) {
 	switch(type) {
 		case MTYPE_NULL: return new MNullValue;
@@ -8,7 +12,7 @@ MValue* MMapValue::castTo(MType type) {
 		case MTYPE_STRING: return new MStringValue("(map)");
 		case MTYPE_FUNCTION: return new MNullValue;
 		case MTYPE_BOOL: return new MBooleanValue(true);
-        case MTYPE_MAP: return new MMapValue;
+        case MTYPE_MAP: return this;
         default: return new MNullValue;
 	}
 }

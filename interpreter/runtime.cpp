@@ -333,7 +333,8 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
 				rstack->pop();
 				std::ifstream cfile(modname + ".mo", std::ios_base::binary);
 				load(dynamic_cast<std::istream&>(cfile), modname + ".");
-				rstack->push(run(modname + ".main"));
+				MValue* retval = run(modname + ".main");
+				rstack->push(retval);
 			}break;
 			case OPCODE_PUSHMAP:
 				rstack->push(new MMapValue());
