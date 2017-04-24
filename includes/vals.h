@@ -2,13 +2,16 @@
 
 #include <string>
 #include "ops.h"
+#include <unordered_map>
+#include <string>
 
 enum MType {
 	MTYPE_NULL,
 	MTYPE_NUMBER,
 	MTYPE_STRING,
 	MTYPE_FUNCTION,
-	MTYPE_BOOL
+	MTYPE_BOOL,
+	MTYPE_MAP
 };
 
 class MValue {
@@ -75,4 +78,16 @@ public:
 	void* get();
 	MType getType() const;
 	MValue* operate(Opcode, MValue*);
+};
+
+class MMapValue : public MValue {
+private:
+	std::unordered_map<std::string, MValue*> val;
+public:
+	static const MType type = MTYPE_MAP;
+	MValue* castTo(MType);
+	void* get();
+	MType getType() const;
+	MValue* operate(Opcode, MValue*);
+	void add(std::string, MValue*);
 };

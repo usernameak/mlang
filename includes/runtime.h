@@ -16,7 +16,7 @@ struct MFrame {
 	std::string name;
 	std::vector<MFrame*> subframes;
 	std::map<std::string, MValue*> vars;
-	
+
 };
 
 class Runtime {
@@ -25,10 +25,13 @@ private:
 	std::istream* bcstream;
 	std::stack<MValue*>* rstack;
 public:
-	Runtime(std::istream*);
-	void load();
-	MFrame* loadFrame();
-	void run();
+	Runtime();
+	~Runtime();
+	void load(std::istream&);
+	void load(std::istream&, std::string);
+	MFrame* loadFrame(std::istream&);
+	MFrame* loadFrame(std::istream&, std::string);
+	MValue* run(std::string = "main");
 	static MFrame* findFrame(std::vector<MFrame*>, std::string);
 	void runFrame(std::vector<MFrame*>, std::string);
 };

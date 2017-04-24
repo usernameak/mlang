@@ -1,4 +1,4 @@
-$ nativeload "mlang_stdlib";
+import "io";
 b = 10;
 a(a, b) = {
 	return a+b+22;
@@ -20,3 +20,4 @@ $ nf_output true;
 $ nf_output false | true;
 $ nf_output true & false;
 $ nf_output "Hello, " + "world!";
+print("HW2");

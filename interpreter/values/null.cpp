@@ -8,6 +8,7 @@ MValue* MNullValue::castTo(MType type) {
 		case MTYPE_STRING: return new MStringValue("null");
 		case MTYPE_FUNCTION: return this;
 		case MTYPE_BOOL: return new MBooleanValue(false);
+		default: return new MNullValue;
 	}
 }
 
@@ -61,7 +62,7 @@ MValue* MNullValue::operate(Opcode op, MValue *val2) {
 				break;
 			}
 		break;
-		
+
 		case OPCODE_AND:
 			switch(val2->getType()) {
 				case MTYPE_BOOL:

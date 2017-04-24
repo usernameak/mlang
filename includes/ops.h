@@ -29,7 +29,11 @@ enum Opcode {
 	OPCODE_AND = 23,
 	OPCODE_OR = 24,
 	OPCODE_JN = 25,
-	OPCODE_JMP = 26
+	OPCODE_JMP = 26,
+	OPCODE_UNMAP = 27,
+	OPCODE_PUSHMAP = 28,
+	OPCODE_MASSN = 29,
+	OPCODE_ECALL = 30
 };
 
 struct MOp {
@@ -93,3 +97,8 @@ struct MJnOp : MOp {
 struct MJmpOp : MOp {
 	uint32_t ptr;
 };
+
+struct MUnmapOp : MOp {};
+struct MPushmapOp : MOp {};
+struct MMassnOp : MOp {};
+struct MEcallOp : MOp {};

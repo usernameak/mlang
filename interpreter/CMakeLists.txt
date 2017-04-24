@@ -16,6 +16,7 @@ add_library(mlang_shared SHARED
 	values/number.cpp
 	values/base.cpp
 	values/null.cpp
+	values/map.cpp
 )
 set_target_properties(mlang_shared
 	PROPERTIES OUTPUT_NAME mlang)

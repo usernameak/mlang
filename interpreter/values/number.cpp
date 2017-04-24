@@ -21,6 +21,7 @@ MValue* MNumberValue::castTo(MType type) {
 		case MTYPE_STRING: return new MStringValue(doubleToString(val));
 		case MTYPE_FUNCTION: return new MNullValue;
 		case MTYPE_BOOL: return new MBooleanValue(val == 0 ? false : true);
+		default: return new MNullValue;
 	}
 }
 

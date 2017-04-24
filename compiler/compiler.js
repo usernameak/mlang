@@ -79,9 +79,26 @@ module.exports = (function() {
 				this.names[statement.name.name] = namegen();
 				var ff = this.compileFrame(this.names[statement.name.name], statement.args.map(a=>a.name), statement.block.statements);
 				this.frames.push(ff);
+				out += "pushf " + this.names[statement.name.name] + "\n";
+				out += "assn " + statement.name.name + "\n";
 			} else if(statement.type == "return_statement") {
 				out += this.pushExpression(statement.val);
 				out += "ret\n";
+			} else if(statement.type == "export_statement") {
+				out += "pushmap\n";
+				for(var j = 0; j < statement.exports.length; j++) {
+					out += this.pushExpression(statement.exports[j]);
+					out += this.pushExpression({
+						type: "string",
+						val: statement.exports[j].name
+					});
+					out += "massn\n"
+				}
+				out += "ret\n";
+			} else if (statement.type == "import_statement") {
+				out += this.pushExpression(statement.libname);
+				out += "ecall\n";
+				out += "unmap\n";
 			} else if(statement.type == "runtime_statement") {
 				for(var j = 0; j < statement.args.length; j++) {
 					out += this.pushExpression(statement.args[j]);
@@ -91,7 +108,7 @@ module.exports = (function() {
 				for(var j = 0; j < statement.args.length; j++) {
 					out += this.pushExpression(statement.args[j]);
 				}
-				out += "pushf " + this.names[statement.name.name] + "\n";
+				out += "pushv " + statement.name.name + "\n";
 				out += "call\npop\n";
 			} else if(statement.type == "if_statement") {
 				out += this.pushExpression(statement.condition);
@@ -158,7 +175,11 @@ module.exports = (function() {
 			"and": 23,
 			"or": 24,
 			"jn": 25,
-			"jmp": 26
+			"jmp": 26,
+			"unmap": 27,
+			"pushmap": 28,
+			"massn": 29,
+			"ecall": 30
 		}
 		var opfuncs = {
 			push: function(bc, num) {

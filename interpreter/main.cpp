@@ -19,9 +19,9 @@ int main(int argc, char **argv) {
 		}
 	}
 	char *filename = argv[argc == 3 ? 2 : 1];
-	std::ifstream* cfile = new std::ifstream(filename, std::ios_base::binary);
-	Runtime* rt = new Runtime(cfile);
-	rt->load();
+	std::ifstream cfile(filename, std::ios_base::binary);
+	Runtime* rt = new Runtime();
+	rt->load(dynamic_cast<std::istream&>(cfile));
 	std::chrono::steady_clock::time_point begin;
 	if(verbose) {
 		begin = std::chrono::steady_clock::now();

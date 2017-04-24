@@ -9,6 +9,7 @@ MValue* MBooleanValue::castTo(MType type) {
 		case MTYPE_STRING: return new MStringValue(val ? "true" : "false");
 		case MTYPE_FUNCTION: return new MNullValue;
 		case MTYPE_BOOL: return this;
+		default: return new MNullValue;
 	}
 }
 
@@ -80,7 +81,7 @@ MValue* MBooleanValue::operate(Opcode op, MValue *val2) {
 		break;
 
 	}
-	
+
 	switch(op) {
 		case OPCODE_EQ:
 			return new MBooleanValue(false);

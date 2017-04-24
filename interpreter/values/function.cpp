@@ -11,6 +11,7 @@ MValue* MFunctionValue::castTo(MType type) {
 		case MTYPE_STRING: return new MNullValue;
 		case MTYPE_FUNCTION: return this;
 		case MTYPE_BOOL: return new MBooleanValue(true);
+		default: return new MNullValue;
 	}
 }
 

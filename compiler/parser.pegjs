@@ -19,7 +19,7 @@
 }
 
 code = _n s:statement* _n {return s}
-statement = _n s:(if_statement / assign_statement / return_statement / runtime_statement / function_statement / call_statement) _n ";" {
+statement = _n s:(if_statement / assign_statement / import_statement / export_statement / return_statement / runtime_statement / function_statement / call_statement) _n ";" {
     return s;
 }
 assign_statement = assignee:identifier _ "=" _ value:expression {
@@ -41,6 +41,18 @@ return_statement = "return" __ val:expression {
     return {
         type: "return_statement",
         val: val
+    }
+}
+import_statement = "import" __ libname:string {
+    return {
+        type: "import_statement",
+        libname: libname
+    }
+}
+export_statement = "export" __ args:(arg1:identifier args2:(_ "," _ arg:identifier _ {return arg})* {return [arg1].concat(args2)}) {
+    return {
+        type: "export_statement",
+        exports: args
     }
 }
 runtime_statement = "$" __ name:identifier args:(__ arg:expression {return arg})* {
