@@ -45,7 +45,7 @@ module.exports = (function() {
 				for(var j = 0; j < expr.args.length; j++) {
 					out += this.pushExpression(expr.args[j]);
 				}
-				out += "pushf " + this.names[expr.name.name] + "\n";
+				out += "pushv " + expr.name.name + "\n";
 				out += "call\n";
 			break;
 			case "string":
@@ -63,6 +63,95 @@ module.exports = (function() {
 		return this.frames;
 	}
 
+	Compiler.prototype.compileStatement = function(statement) {
+		var out = "";
+		var subframes = [];
+		if(statement.type == "assign_statement") {
+			out += this.pushExpression(statement.value);
+			out += "assn " + statement.assignee.name + "\n";
+		} else if(statement.type == "function_statement") {
+			this.names[statement.name.name] = namegen();
+			var ff = this.compileFrame(this.names[statement.name.name], statement.args.map(a=>a.name), statement.block.statements);
+			this.frames.push(ff);
+			out += "pushf " + this.names[statement.name.name] + "\n";
+			out += "assn " + statement.name.name + "\n";
+		} else if(statement.type == "return_statement") {
+			out += this.pushExpression(statement.val);
+			out += "ret\n";
+		} else if(statement.type == "export_statement") {
+			out += "pushmap\n";
+			for(var j = 0; j < statement.exports.length; j++) {
+				out += this.pushExpression(statement.exports[j]);
+				out += this.pushExpression({
+					type: "string",
+					val: statement.exports[j].name
+				});
+				out += "massn\n"
+			}
+			out += "ret\n";
+		} else if (statement.type == "import_statement") {
+			out += this.pushExpression(statement.libname);
+			out += "ecall\n";
+			out += "unmap\n";
+		} else if(statement.type == "runtime_statement") {
+			for(var j = 0; j < statement.args.length; j++) {
+				out += this.pushExpression(statement.args[j]);
+			}
+			out += "rtcl "+statement.name.name+"\n";
+		} else if(statement.type == "call_statement") {
+			for(var j = 0; j < statement.args.length; j++) {
+				out += this.pushExpression(statement.args[j]);
+			}
+			out += "pushv " + statement.name.name + "\n";
+			out += "call\npop\n";
+		} else if(statement.type == "if_statement") {
+			var lab1 = this.curlabel;
+			var lab2 = this.curlabel + 1;
+			this.curlabel += 2;
+			out += this.pushExpression(statement.condition);
+			var strt = out.split("\n").length-2
+			out += "jn L" + lab1 + "\n";
+			var ifframe = this.compileFrame("L"+this.curlabel, [], statement.thenBlock.statements, true);
+			out += ifframe.code;
+			subframes.push.apply(subframes, ifframe.subframes);
+			if(statement.elseBlock) {
+				out += "jmp L" + lab2 + "\n";
+			}
+			out += ":L" + lab1 + "\n";
+			if(statement.elseBlock) {
+				var elseframe = this.compileFrame("L"+lab2, [], statement.elseBlock.statements, true);
+				out += elseframe.code;
+				subframes.push.apply(subframes, elseframe.subframes);
+				out += ":L" + lab2 + "\n";
+			}
+
+		} else if(statement.type == "for_statement") {
+			var lab1 = this.curlabel;
+			var lab2 = this.curlabel + 1;
+			this.curlabel += 2;
+			var initcstat = this.compileStatement(statement.initial);
+			out += initcstat.out;
+			subframes.push.apply(subframes, initcstat.subframes);
+			out += ":L" + lab1 + "\n";
+			out += this.pushExpression(statement.condition);
+			out += "jn L" + lab2 + "\n";
+			var blockframe = this.compileFrame("L"+lab1, [], statement.block.statements, true);
+			out += blockframe.code;
+			subframes.push.apply(subframes, blockframe.subframes);
+			var inccstat = this.compileStatement(statement.increment);
+			out += inccstat.out;
+			subframes.push.apply(subframes, inccstat.subframes);
+			out += "jmp L" + lab1 + "\n";
+			out += ":L" + lab2 + "\n";
+		} else {
+
+		}
+		return {
+			out: out,
+			subframes: subframes
+		};
+	}
+
 	Compiler.prototype.compileFrame = function(name, args, code, dontUseReturnStub) {
 		var subframes = [];
 		var out = "";
@@ -70,65 +159,9 @@ module.exports = (function() {
 			out += "assn " + args[i] + "\n";
 		}
 		for(var i = 0; i < code.length; i++) {
-			debugger;
-			var statement = code[i];
-			if(statement.type == "assign_statement") {
-				out += this.pushExpression(statement.value);
-				out += "assn " + statement.assignee.name + "\n";
-			} else if(statement.type == "function_statement") {
-				this.names[statement.name.name] = namegen();
-				var ff = this.compileFrame(this.names[statement.name.name], statement.args.map(a=>a.name), statement.block.statements);
-				this.frames.push(ff);
-				out += "pushf " + this.names[statement.name.name] + "\n";
-				out += "assn " + statement.name.name + "\n";
-			} else if(statement.type == "return_statement") {
-				out += this.pushExpression(statement.val);
-				out += "ret\n";
-			} else if(statement.type == "export_statement") {
-				out += "pushmap\n";
-				for(var j = 0; j < statement.exports.length; j++) {
-					out += this.pushExpression(statement.exports[j]);
-					out += this.pushExpression({
-						type: "string",
-						val: statement.exports[j].name
-					});
-					out += "massn\n"
-				}
-				out += "ret\n";
-			} else if (statement.type == "import_statement") {
-				out += this.pushExpression(statement.libname);
-				out += "ecall\n";
-				out += "unmap\n";
-			} else if(statement.type == "runtime_statement") {
-				for(var j = 0; j < statement.args.length; j++) {
-					out += this.pushExpression(statement.args[j]);
-				}
-				out += "rtcl "+statement.name.name+"\n";
-			} else if(statement.type == "call_statement") {
-				for(var j = 0; j < statement.args.length; j++) {
-					out += this.pushExpression(statement.args[j]);
-				}
-				out += "pushv " + statement.name.name + "\n";
-				out += "call\npop\n";
-			} else if(statement.type == "if_statement") {
-				out += this.pushExpression(statement.condition);
-				var strt = out.split("\n").length-2
-				out += "jn L" + this.curlabel + "\n";
-				var ifframe = this.compileFrame("L"+this.curlabel, [], statement.thenBlock.statements, true);
-				out += ifframe.code;
-				subframes.push.apply(subframes, ifframe.subframes);
-				out += "jmp L" + (this.curlabel + 1) + "\n";
-				out += ":L" + (this.curlabel++) + "\n";
-				if(statement.elseBlock) {
-					var elseframe = this.compileFrame("L"+this.curlabel, [], statement.elseBlock.statements, true);
-					out += elseframe.code;
-					subframes.push.apply(subframes, elseframe.subframes);
-					out += ":L" + (this.curlabel++) + "\n";
-				}
-
-			} else {
-
-			}
+			var statement = this.compileStatement(code[i]);
+			out += statement.out;
+			subframes.push.apply(subframes, statement.subframes);
 		}
 		if(!dontUseReturnStub) out += "push 0\nret\n";
 		return {
@@ -211,26 +244,32 @@ module.exports = (function() {
 				bc.push(0);
 			},
 			jn: function(bc, label) {
+				var idx = 0;
 				for(var i = 0; i < lines.length; i++) {
 					var elems = lines[i].split(" ");
-					if(elems[0].charAt(0) == ":" && elems[0].slice(1) == label) {
-						var buf = Buffer.alloc(4);
-						buf.writeInt32LE(i);
-						bc.push.apply(bc, buf.toJSON().data);
-						return;
-					}
+					if(elems[0].charAt(0) == ":") {
+						if(elems[0].slice(1) == label) {
+							var buf = Buffer.alloc(4);
+							buf.writeInt32LE(idx);
+							bc.push.apply(bc, buf.toJSON().data);
+							return;
+						}
+					} else idx++;
 				}
 				console.log("Error assembling frame \"" + frame.name + "\": label \"" + label + "\" not found")
 			},
 			jmp: function(bc, label) {
+				var idx = 0;
 				for(var i = 0; i < lines.length; i++) {
 					var elems = lines[i].split(" ");
-					if(elems[0].charAt(0) == ":" && elems[0].slice(1) == label) {
-						var buf = Buffer.alloc(4);
-						buf.writeInt32LE(i);
-						bc.push.apply(bc, buf.toJSON().data);
-						return;
-					}
+					if(elems[0].charAt(0) == ":") {
+						if(elems[0].slice(1) == label) {
+							var buf = Buffer.alloc(4);
+							buf.writeInt32LE(idx);
+							bc.push.apply(bc, buf.toJSON().data);
+							return;
+						}
+					} else idx++;
 				}
 				console.log("Error assembling frame \"" + frame.name + "\": label \"" + label + "\" not found")
 			}

@@ -321,12 +321,12 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
 				bool condition = *((bool*) rstack->top()->castTo(MTYPE_BOOL)->get());
 				rstack->pop();
 				if(!condition) {
-					i = frame->ops.begin() + ptr - 1;
+					i = frame->ops.begin() + ptr - 1; // XXX: - 2 is magic
 				}
 			}break;
 			case OPCODE_JMP:{
 				uint32_t ptr = static_cast<MJmpOp*>(op)->ptr;
-				i = frame->ops.begin() + ptr - 2;
+				i = frame->ops.begin() + ptr - 1; // XXX: - 2 is even more magic
 			}break;
 			case OPCODE_ECALL:{
 				std::string modname = *((std::string*) rstack->top()->castTo(MTYPE_STRING)->get());
@@ -334,7 +334,7 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
 				std::ifstream cfile(modname + ".mo", std::ios_base::binary);
 				load(dynamic_cast<std::istream&>(cfile), modname + ".");
 				MValue* retval = run(modname + ".main");
-				rstack->push(retval);
+				/*rstack->push(retval);*/
 			}break;
 			case OPCODE_PUSHMAP:
 				rstack->push(new MMapValue());

@@ -19,9 +19,10 @@
 }
 
 code = _n s:statement* _n {return s}
-statement = _n s:(if_statement / assign_statement / import_statement / export_statement / return_statement / runtime_statement / function_statement / call_statement) _n ";" {
+statement = _n s:statement_raw _n ";"? {
     return s;
 }
+statement_raw = for_statement / if_statement / assign_statement / import_statement / export_statement / return_statement / runtime_statement / function_statement / call_statement / expression
 assign_statement = assignee:identifier _ "=" _ value:expression {
     return {
         type: "assign_statement",
@@ -78,6 +79,15 @@ if_statement = "if" _ "(" _ cond:expression _ ")" _ thenBlock:block elseBlock:( 
         thenBlock: thenBlock
     }
 }
+for_statement = "for" _ "(" _ initial:statement_raw _ ";" _ condition:expression _ ";" _ increment:statement _ ")" _ block:block {
+	return {
+    	type: "for_statement",
+        initial: initial,
+        condition: condition,
+        increment: increment,
+        block: block
+    }
+}
 
 expression "expression" = bwise_expression / noadd_expression
 noadd_expression "expression" = call_expression / string / number / boolean / identifier
@@ -91,7 +101,7 @@ call_expression = name:identifier _ "(" _ args:(arg1:expression args2:(_ "," _ a
 bwise_expression = left:cmp_expression right:(_ op:("<<" / ">>" / "&" / "|") _ expr:cmp_expression {return {op:op, expr:expr}})+ {
     return buildBinaryExpr(left, right);
 } / cmp_expression
-cmp_expression = left:add_expression right:(_ op:("<" / ">" / ">=" / "<=" / "!=" / "==") _ expr:add_expression {return {op:op, expr:expr}})+ {
+cmp_expression = left:add_expression right:(_ op:(">=" / "<=" / "<" / ">" / "!=" / "==") _ expr:add_expression {return {op:op, expr:expr}})+ {
     return buildBinaryExpr(left, right);
 } / add_expression
 add_expression = left:mul_expression right:(_ op:("+" / "-") _ expr:mul_expression {return {op:op, expr:expr}})+ {
