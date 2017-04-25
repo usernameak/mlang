@@ -3,7 +3,6 @@
 #include "runtime.h"
 
 #include <iostream>
-#include <stack>
 #include <cstdint>
 #include <map>
 #include <unordered_map>
@@ -18,13 +17,14 @@
 
 #include "ops.h"
 #include "vals.h"
+#include "types.h"
 
 using namespace mlang;
 
-std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
+std::map<std::string, void(*)(runtime_stack*)> nativefunctions;
 
 #ifdef _WIN32
-	void nf_nativeload(std::stack<MValue*>* stack) {
+	void nf_nativeload(runtime_stack* stack) {
 		std::string prefixes[] = {"lib", "", ""};
 		std::string suffixes[] = {".dll", ".dll", ""};
 		HINSTANCE handle;
@@ -45,7 +45,7 @@ std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 		int count = *(int*) GetProcAddress(handle, "mlang_nativefunctions_count");
 		char** list = *(char***) GetProcAddress(handle, "mlang_nativefunctions_list");
 		for(int i = 0; i < count; i++) {
-			void (*func)(std::stack<MValue*>*) = (void(*)(std::stack<MValue*>*)) GetProcAddress(handle, list[i]);
+			void (*func)(runtime_stack*) = (void(*)(runtime_stack*)) GetProcAddress(handle, list[i]);
 			if(func == nullptr) {
 				std::cout << "Failed to load library " << libname <<
 					": function " << list[i] << " cannot be loaded" << std::endl;
@@ -55,7 +55,7 @@ std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 		}
 	}
 #else
-	void nf_nativeload(std::stack<MValue*>* stack) {
+	void nf_nativeload(runtime_stack* stack) {
 		std::string prefixes[] = {"./lib", "lib", "", ""};
 		std::string suffixes[] = {".so", ".so", ".so", ""};
 		void *handle = nullptr;
@@ -75,7 +75,7 @@ std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 		int count = *(int*) dlsym(handle, "mlang_nativefunctions_count");
 		char** list = *(char***) dlsym(handle, "mlang_nativefunctions_list");
 		for(int i = 0; i < count; i++) {
-			void (*func)(std::stack<MValue*>*) = (void(*)(std::stack<MValue*>*)) dlsym(handle, list[i]);
+			void (*func)(runtime_stack*) = (void(*)(runtime_stack*)) dlsym(handle, list[i]);
 			if(func == nullptr) {
 				std::cout << dlerror() << std::endl;
 				exit(1);
@@ -85,11 +85,11 @@ std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 	}
 #endif
 
-Runtime::Runtime() : rstack(new std::stack<MValue*>()) {
+runtime::runtime() : rstack(new runtime_stack()) {
 	NATIVEFUNC_SET("nativeload", nf_nativeload);
 }
 
-void Runtime::load(std::istream& bcstream, const std::string prefix) {
+void runtime::load(std::istream& bcstream, const std::string prefix) {
 	while(true) {
 		MFrame* frame = loadFrame(bcstream, prefix);
 		if(frame == nullptr) return;
@@ -97,7 +97,7 @@ void Runtime::load(std::istream& bcstream, const std::string prefix) {
 	}
 }
 
-MFrame* Runtime::loadFrame(std::istream& bcstream, const std::string prefix) {
+MFrame* runtime::loadFrame(std::istream& bcstream, const std::string prefix) {
 	MFrame* frame = new MFrame;
 	uint8_t curbyte;
 
@@ -226,7 +226,7 @@ MFrame* Runtime::loadFrame(std::istream& bcstream, const std::string prefix) {
 	return frame;
 }
 
-MFrame* Runtime::findFrame(std::vector<MFrame*> framev, const std::string framename) {
+MFrame* runtime::findFrame(std::vector<MFrame*> framev, const std::string framename) {
 	for(MFrame* frame : framev) {
 		if(frame->name.compare(framename) == 0) {
 			return frame;
@@ -237,12 +237,12 @@ MFrame* Runtime::findFrame(std::vector<MFrame*> framev, const std::string framen
 	return nullptr;
 }
 
-MValue* Runtime::run(const std::string mainname) {
+MValue* runtime::run(const std::string mainname) {
 	runFrame(frames, mainname);
 	return rstack->top();
 }
 
-void Runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framename) {
+void runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framename) {
 	MFrame* frame = findFrame(ldframes, framename);
 	for(auto i = frame->ops.begin(); i != frame->ops.end(); i++) {
 		ops_n::base* op = *i;
@@ -284,7 +284,7 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framenam
 			case OPCODE_CALL:{
 				std::string str = *((std::string*) rstack->top()->castTo(MTYPE_FUNCTION)->get());
 				rstack->pop();
-				Runtime::runFrame(this->frames, str); // TODO: PARENT FRAME CALLS
+				runFrame(this->frames, str); // TODO: PARENT FRAME CALLS
 			}break;
 			case OPCODE_RET: return;
 			case OPCODE_JN:{
@@ -323,6 +323,6 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framenam
 		}
 	}
 }
-Runtime::~Runtime() {
+runtime::~runtime() {
 	delete rstack;
 }

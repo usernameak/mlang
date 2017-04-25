@@ -4,6 +4,9 @@
 #include <cstring>
 #include "runtime.h"
 #include "vals.h"
+
+using namespace mlang;
+
 int main(int argc, char **argv) {
 	if(argc < 2 || argc > 3) {
 		std::cerr << std::flush << "usage: mlang [-v] <compiled source name>" << std::endl;
@@ -20,7 +23,7 @@ int main(int argc, char **argv) {
 	}
 	char *filename = argv[argc == 3 ? 2 : 1];
 	std::ifstream cfile(filename, std::ios_base::binary);
-	Runtime* rt = new Runtime();
+	runtime* rt = new runtime();
 	rt->load(dynamic_cast<std::istream&>(cfile));
 	std::chrono::steady_clock::time_point begin;
 	if(verbose) {

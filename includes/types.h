@@ -1,8 +1,8 @@
 #pragma once
 
-#include <stack>
+#include "stack.h"
 #include "vals.h"
 
 namespace mlang {
-    typedef std::stack<MValue*> runtime_stack;
+    typedef stack<MValue*> runtime_stack;
 }

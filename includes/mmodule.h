@@ -1,3 +1,5 @@
+#include "types.h"
+
 #ifdef _WIN32
 
 	#define mlang_module(funcnames...) extern "C" {\
@@ -6,7 +8,7 @@
 	}\
 	extern "C"
 
-	#define mlang_function(name) void __declspec(dllexport) name(std::stack<MValue*>* stack)
+	#define mlang_function(name) void __declspec(dllexport) name(mlang::runtime_stack* stack)
 
 #else
 
@@ -16,6 +18,6 @@
 	}\
 	extern "C"
 
-	#define mlang_function(name) void name(std::stack<MValue*>* stack)
-	
+	#define mlang_function(name) void name(mlang::runtime_stack* stack)
+
 #endif

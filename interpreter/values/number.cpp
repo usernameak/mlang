@@ -4,10 +4,11 @@
 #include <string>
 #include <sstream>
 #include <cstdint>
+#include <iomanip>
 
 static std::string doubleToString(double val) {
 	std::stringstream ss;
-	ss << val;
+	ss << std::setprecision(20) << val;
 	std::string ret = ss.str();
 	return ret;
 }
