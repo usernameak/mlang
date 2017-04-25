@@ -22,16 +22,15 @@ struct MFrame {
 class Runtime {
 private:
 	std::vector<MFrame*> frames;
-	std::istream* bcstream;
 	std::stack<MValue*>* rstack;
 public:
 	Runtime();
 	~Runtime();
 	void load(std::istream&);
-	void load(std::istream&, std::string);
+	void load(std::istream&, const std::string);
 	MFrame* loadFrame(std::istream&);
-	MFrame* loadFrame(std::istream&, std::string);
-	MValue* run(std::string = "main");
-	static MFrame* findFrame(std::vector<MFrame*>, std::string);
-	void runFrame(std::vector<MFrame*>, std::string);
+	MFrame* loadFrame(std::istream&, const std::string);
+	MValue* run(const std::string = "main");
+	static MFrame* findFrame(std::vector<MFrame*>, const std::string);
+	void runFrame(std::vector<MFrame*>, const std::string);
 };

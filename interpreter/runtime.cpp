@@ -92,7 +92,7 @@ void Runtime::load(std::istream& bcstream) {
 	load(bcstream, "");
 }
 
-void Runtime::load(std::istream& bcstream, std::string prefix) {
+void Runtime::load(std::istream& bcstream, const std::string prefix) {
 	while(true) {
 		MFrame* frame = loadFrame(bcstream, prefix);
 		if(frame == nullptr) return;
@@ -104,7 +104,7 @@ MFrame* Runtime::loadFrame(std::istream& bcstream) {
 	return loadFrame(bcstream, "");
 }
 
-MFrame* Runtime::loadFrame(std::istream& bcstream, std::string prefix) {
+MFrame* Runtime::loadFrame(std::istream& bcstream, const std::string prefix) {
 	MFrame* frame = new MFrame;
 	uint8_t curbyte;
 
@@ -240,7 +240,7 @@ MFrame* Runtime::loadFrame(std::istream& bcstream, std::string prefix) {
 	return frame;
 }
 
-MFrame* Runtime::findFrame(std::vector<MFrame*> framev, std::string framename) {
+MFrame* Runtime::findFrame(std::vector<MFrame*> framev, const std::string framename) {
 	for(MFrame* frame : framev) {
 		if(frame->name.compare(framename) == 0) {
 			return frame;
@@ -251,51 +251,47 @@ MFrame* Runtime::findFrame(std::vector<MFrame*> framev, std::string framename) {
 	return nullptr;
 }
 
-MValue* Runtime::run(std::string mainname) {
+MValue* Runtime::run(const std::string mainname) {
 	runFrame(frames, mainname);
 	return rstack->top();
 }
 
-void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
+void Runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framename) {
 	MFrame* frame = findFrame(ldframes, framename);
 	for(auto i = frame->ops.begin(); i != frame->ops.end(); i++) {
 		MOp* op = *i;
-		double a, b;
-		MValue *mv1, *mv2;
-		std::string str;
 		switch(op->type) {
-			case OPCODE_PUSH:
+			case OPCODE_PUSH:{
 				rstack->push(new MNumberValue(((MPushOp*)op)->value));
-			break;
-			case OPCODE_PUSHV:
+			}break;
+			case OPCODE_PUSHV:{
 				rstack->push(frame->vars[((MPushvOp*)op)->name]);
-			break;
-			case OPCODE_ASSN:
+			}break;
+			case OPCODE_ASSN:{
 				frame->vars[((MAssnOp*)op)->name] = rstack->top();
 				rstack->pop();
-			break;
-			case OPCODE_RTCL:
+			}break;
+			case OPCODE_RTCL:{
 				nativefunctions[((MRtclOp*)op)->name](rstack);
-			break;
-			case OPCODE_PUSHF:
+			}break;
+			case OPCODE_PUSHF:{
 				rstack->push(new MFunctionValue(((MPushfOp*)op)->name));
-			break;
-			case OPCODE_PUSHS:
+			}break;
+			case OPCODE_PUSHS:{
 				rstack->push(new MStringValue(((MPushsOp*)op)->str));
-			break;
-			case OPCODE_CALL:
-				str = *((std::string*) rstack->top()->castTo(MTYPE_FUNCTION)->get());
+			}break;
+			case OPCODE_CALL:{
+				std::string str = *((std::string*) rstack->top()->castTo(MTYPE_FUNCTION)->get());
 				rstack->pop();
 				Runtime::runFrame(this->frames, str); // TODO: PARENT FRAME CALLS
-			break;
-			case OPCODE_RET:
-			return;
-			case OPCODE_POP:
+			}break;
+			case OPCODE_RET: return;
+			case OPCODE_POP:{
 				rstack->pop();
-			break;
-			case OPCODE_PUSHB:
+			}break;
+			case OPCODE_PUSHB:{
 				rstack->push(new MBooleanValue(((MPushbOp*)op)->value));
-			break;
+			}break;
 			case OPCODE_ADD:
 			case OPCODE_SUB:
 			case OPCODE_MUL:
@@ -309,13 +305,13 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, std::string framename) {
 			case OPCODE_AND:
 			case OPCODE_OR:
 			case OPCODE_LSH:
-			case OPCODE_RSH:
-				mv2 = rstack->top();
+			case OPCODE_RSH:{
+				MValue *mv2 = rstack->top();
 				rstack->pop();
-				mv1 = rstack->top();
+				MValue *mv1 = rstack->top();
 				rstack->pop();
 				rstack->push(mv1->operate(op->type, mv2));
-			break;
+			}break;
 			case OPCODE_JN:{
 				uint32_t ptr = static_cast<MJnOp*>(op)->ptr;
 				bool condition = *((bool*) rstack->top()->castTo(MTYPE_BOOL)->get());
