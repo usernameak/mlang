@@ -19,6 +19,8 @@
 #include "ops.h"
 #include "vals.h"
 
+using namespace mlang;
+
 std::map<std::string, void(*)(std::stack<MValue*>*)> nativefunctions;
 
 #ifdef _WIN32
@@ -87,21 +89,12 @@ Runtime::Runtime() : rstack(new std::stack<MValue*>()) {
 	NATIVEFUNC_SET("nativeload", nf_nativeload);
 }
 
-
-void Runtime::load(std::istream& bcstream) {
-	load(bcstream, "");
-}
-
 void Runtime::load(std::istream& bcstream, const std::string prefix) {
 	while(true) {
 		MFrame* frame = loadFrame(bcstream, prefix);
 		if(frame == nullptr) return;
 		frames.push_back(frame);
 	}
-}
-
-MFrame* Runtime::loadFrame(std::istream& bcstream) {
-	return loadFrame(bcstream, "");
 }
 
 MFrame* Runtime::loadFrame(std::istream& bcstream, const std::string prefix) {
@@ -120,96 +113,81 @@ MFrame* Runtime::loadFrame(std::istream& bcstream, const std::string prefix) {
 		bcstream.read((char*)&curbyte, 1);
 		if(curbyte==0) break;
 		switch(curbyte) {
-			case OPCODE_ADD:{
-				MAddOp *addop = new MAddOp();
-				addop->type = (Opcode) curbyte;
-				frame->ops.push_back((MOp*)addop);
-			}break;
-			case OPCODE_SUB:{
-				MSubOp *subop = new MSubOp();
-				subop->type = (Opcode) curbyte;
-				frame->ops.push_back((MOp*)subop);
-			}break;
-			case OPCODE_MUL:{
-				MMulOp *mulop = new MMulOp();
-				mulop->type = (Opcode) curbyte;
-				frame->ops.push_back((MOp*)mulop);
-			}break;
-			case OPCODE_DIV:{
-				MDivOp *divop = new MDivOp();
-				divop->type = (Opcode) curbyte;
-				frame->ops.push_back((MOp*)divop);
-			}break;
+
 			case OPCODE_PUSH:{
-				MPushOp *pushop = new MPushOp();
+				ops_n::pushop *pushop = new ops_n::pushop();
 				pushop->type = (Opcode) curbyte;
 				bcstream.read((char*)&pushop->value, 8);
-				frame->ops.push_back((MOp*)pushop);
+				frame->ops.push_back((ops_n::base*)pushop);
 			}break;
 			case OPCODE_PUSHV:{
-				MPushvOp *pushvop = new MPushvOp();
+				ops_n::pushvop *pushvop = new ops_n::pushvop();
 				pushvop->type = (Opcode) curbyte;
 				std::getline(bcstream, pushvop->name, '\0');
-				frame->ops.push_back((MOp*)pushvop);
+				frame->ops.push_back((ops_n::base*)pushvop);
 			}break;
 			case OPCODE_ASSN:{
-				MAssnOp *assnop = new MAssnOp();
+				ops_n::assnop *assnop = new ops_n::assnop();
 				assnop->type = (Opcode) curbyte;
 				std::getline(bcstream, assnop->name, '\0');
-				frame->ops.push_back((MOp*)assnop);
+				frame->ops.push_back((ops_n::base*)assnop);
 			}break;
 			case OPCODE_RTCL:{
-				MRtclOp *rtclop = new MRtclOp();
+				ops_n::rtclop *rtclop = new ops_n::rtclop();
 				rtclop->type = (Opcode) curbyte;
 				std::getline(bcstream, rtclop->name, '\0');
-				frame->ops.push_back((MOp*)rtclop);
+				frame->ops.push_back((ops_n::base*)rtclop);
 			}break;
 			case OPCODE_PUSHF:{
-				MPushfOp *pushfop = new MPushfOp();
+				ops_n::pushfop *pushfop = new ops_n::pushfop();
 				pushfop->type = (Opcode) curbyte;
 				std::getline(bcstream, pushfop->name, '\0');
 				pushfop->name = prefix + pushfop->name;
-				frame->ops.push_back((MOp*)pushfop);
+				frame->ops.push_back((ops_n::base*)pushfop);
 			}break;
 			case OPCODE_RET:{
-				MRetOp *retop = new MRetOp();
+				ops_n::retop *retop = new ops_n::retop();
 				retop->type = (Opcode) curbyte;
-				frame->ops.push_back((MOp*)retop);
+				frame->ops.push_back((ops_n::base*)retop);
 			}break;
 			case OPCODE_PUSHS:{
-				MPushsOp *pushsop = new MPushsOp();
+				ops_n::pushsop *pushsop = new ops_n::pushsop();
 				pushsop->type = (Opcode) curbyte;
 				std::getline(bcstream, pushsop->str, '\0');
-				frame->ops.push_back((MOp*)pushsop);
+				frame->ops.push_back((ops_n::base*)pushsop);
 			}break;
 			case OPCODE_CALL:{
-				MCallOp *callop = new MCallOp();
+				ops_n::callop *callop = new ops_n::callop();
 				callop->type = (Opcode) curbyte;
-				frame->ops.push_back((MOp*)callop);
+				frame->ops.push_back((ops_n::base*)callop);
 			}break;
 			case OPCODE_POP:{
-				MPopOp *popop = new MPopOp();
+				ops_n::popop *popop = new ops_n::popop();
 				popop->type = (Opcode) curbyte;
-				frame->ops.push_back((MOp*)popop);
+				frame->ops.push_back((ops_n::base*)popop);
 			}break;
 			case OPCODE_PUSHB:{
-				MPushbOp *pushbop = new MPushbOp();
+				ops_n::pushbop *pushbop = new ops_n::pushbop();
 				pushbop->type = (Opcode) curbyte;
 				bcstream.read((char*)&pushbop->value, 1);
-				frame->ops.push_back((MOp*)pushbop);
+				frame->ops.push_back((ops_n::base*)pushbop);
 			}break;
 			case OPCODE_JN:{
-				MJnOp *jnop = new MJnOp();
+				ops_n::jnop *jnop = new ops_n::jnop();
 				jnop->type = (Opcode) curbyte;
 				bcstream.read((char*)&jnop->ptr, 4);
-				frame->ops.push_back((MOp*)jnop);
+				frame->ops.push_back((ops_n::base*)jnop);
 			}break;
 			case OPCODE_JMP:{
-				MJmpOp *jmpop = new MJmpOp();
+				ops_n::jmpop *jmpop = new ops_n::jmpop();
 				jmpop->type = (Opcode) curbyte;
 				bcstream.read((char*)&jmpop->ptr, 4);
-				frame->ops.push_back((MOp*)jmpop);
+				frame->ops.push_back((ops_n::base*)jmpop);
 			}break;
+			case OPCODE_ADD:
+			case OPCODE_SUB:
+			case OPCODE_MUL:
+			case OPCODE_DIV:
 			case OPCODE_LEQ:
 			case OPCODE_GRT:
 			case OPCODE_GEQ:
@@ -219,12 +197,20 @@ MFrame* Runtime::loadFrame(std::istream& bcstream, const std::string prefix) {
 			case OPCODE_LSH:
 			case OPCODE_RSH:
 			case OPCODE_AND:
-			case OPCODE_OR:
+			case OPCODE_OR:{
+				ops_n::type_operator *op = new ops_n::type_operator();
+				op->type = (Opcode) curbyte;
+				frame->ops.push_back(op);
+			}break;
 			case OPCODE_UNMAP:
-			case OPCODE_PUSHMAP:
 			case OPCODE_MASSN:
 			case OPCODE_ECALL:{
-				MOp *op = new MOp();
+				ops_n::base *op = new ops_n::base();
+				op->type = (Opcode) curbyte;
+				frame->ops.push_back(op);
+			}break;
+			case OPCODE_PUSHMAP:{
+				ops_n::pushmapop *op = new ops_n::pushmapop();
 				op->type = (Opcode) curbyte;
 				frame->ops.push_back(op);
 			}break;
@@ -259,39 +245,13 @@ MValue* Runtime::run(const std::string mainname) {
 void Runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framename) {
 	MFrame* frame = findFrame(ldframes, framename);
 	for(auto i = frame->ops.begin(); i != frame->ops.end(); i++) {
-		MOp* op = *i;
+		ops_n::base* op = *i;
 		switch(op->type) {
-			case OPCODE_PUSH:{
-				rstack->push(new MNumberValue(((MPushOp*)op)->value));
-			}break;
-			case OPCODE_PUSHV:{
-				rstack->push(frame->vars[((MPushvOp*)op)->name]);
-			}break;
-			case OPCODE_ASSN:{
-				frame->vars[((MAssnOp*)op)->name] = rstack->top();
-				rstack->pop();
-			}break;
-			case OPCODE_RTCL:{
-				nativefunctions[((MRtclOp*)op)->name](rstack);
-			}break;
-			case OPCODE_PUSHF:{
-				rstack->push(new MFunctionValue(((MPushfOp*)op)->name));
-			}break;
-			case OPCODE_PUSHS:{
-				rstack->push(new MStringValue(((MPushsOp*)op)->str));
-			}break;
-			case OPCODE_CALL:{
-				std::string str = *((std::string*) rstack->top()->castTo(MTYPE_FUNCTION)->get());
-				rstack->pop();
-				Runtime::runFrame(this->frames, str); // TODO: PARENT FRAME CALLS
-			}break;
-			case OPCODE_RET: return;
-			case OPCODE_POP:{
-				rstack->pop();
-			}break;
-			case OPCODE_PUSHB:{
-				rstack->push(new MBooleanValue(((MPushbOp*)op)->value));
-			}break;
+			case OPCODE_PUSH:
+			case OPCODE_PUSHS:
+			case OPCODE_POP:
+			case OPCODE_PUSHB:
+			case OPCODE_PUSHMAP:
 			case OPCODE_ADD:
 			case OPCODE_SUB:
 			case OPCODE_MUL:
@@ -305,24 +265,39 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framenam
 			case OPCODE_AND:
 			case OPCODE_OR:
 			case OPCODE_LSH:
-			case OPCODE_RSH:{
-				MValue *mv2 = rstack->top();
-				rstack->pop();
-				MValue *mv1 = rstack->top();
-				rstack->pop();
-				rstack->push(mv1->operate(op->type, mv2));
+			case OPCODE_RSH:
+				op->execute(*rstack);
+			break;
+			case OPCODE_PUSHV:{
+				rstack->push(frame->vars[((ops_n::pushvop*)op)->name]);
 			}break;
+			case OPCODE_ASSN:{
+				frame->vars[((ops_n::assnop*)op)->name] = rstack->top();
+				rstack->pop();
+			}break;
+			case OPCODE_RTCL:{
+				nativefunctions[((ops_n::rtclop*)op)->name](rstack);
+			}break;
+			case OPCODE_PUSHF:{
+				rstack->push(new MFunctionValue(((ops_n::pushfop*)op)->name));
+			}break;
+			case OPCODE_CALL:{
+				std::string str = *((std::string*) rstack->top()->castTo(MTYPE_FUNCTION)->get());
+				rstack->pop();
+				Runtime::runFrame(this->frames, str); // TODO: PARENT FRAME CALLS
+			}break;
+			case OPCODE_RET: return;
 			case OPCODE_JN:{
-				uint32_t ptr = static_cast<MJnOp*>(op)->ptr;
+				uint32_t ptr = static_cast<ops_n::jnop*>(op)->ptr;
 				bool condition = *((bool*) rstack->top()->castTo(MTYPE_BOOL)->get());
 				rstack->pop();
 				if(!condition) {
-					i = frame->ops.begin() + ptr - 1; // XXX: - 2 is magic
+					i = frame->ops.begin() + ptr - 1;
 				}
 			}break;
 			case OPCODE_JMP:{
-				uint32_t ptr = static_cast<MJmpOp*>(op)->ptr;
-				i = frame->ops.begin() + ptr - 1; // XXX: - 2 is even more magic
+				uint32_t ptr = static_cast<ops_n::jmpop*>(op)->ptr;
+				i = frame->ops.begin() + ptr - 1;
 			}break;
 			case OPCODE_ECALL:{
 				std::string modname = *((std::string*) rstack->top()->castTo(MTYPE_STRING)->get());
@@ -330,11 +305,7 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framenam
 				std::ifstream cfile(modname + ".mo", std::ios_base::binary);
 				load(dynamic_cast<std::istream&>(cfile), modname + ".");
 				MValue* retval = run(modname + ".main");
-				/*rstack->push(retval);*/
 			}break;
-			case OPCODE_PUSHMAP:
-				rstack->push(new MMapValue());
-			break;
 			case OPCODE_MASSN:{
 				MValue *key = rstack->top();
 				rstack->pop();
@@ -353,6 +324,5 @@ void Runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framenam
 	}
 }
 Runtime::~Runtime() {
-	/*delete rstack;
-	delete bcstream;*/
+	delete rstack;
 }

@@ -2,103 +2,107 @@
 
 #include <cstdint>
 #include <string>
+#include <stack>
+#include "types.h"
+#include "vals.h"
+#include "opcodes.h"
 
-enum Opcode {
-	OPCODE_ADD = 1,
-	OPCODE_SUB = 2,
-	OPCODE_MUL = 3,
-	OPCODE_DIV = 4,
-	OPCODE_PUSH = 5,
-	OPCODE_PUSHV = 6,
-	OPCODE_ASSN = 7,
-	OPCODE_RTCL = 8,
-	OPCODE_PUSHF = 9,
-	OPCODE_RET = 10,
-	OPCODE_PUSHS = 11,
-	OPCODE_CALL = 12,
-	OPCODE_POP = 13,
-	OPCODE_PUSHB = 14,
-	OPCODE_LEQ = 15,
-	OPCODE_GRT = 16,
-	OPCODE_GEQ = 17,
-	OPCODE_LESS = 18,
-	OPCODE_EQ = 19,
-	OPCODE_NEQ = 20,
-	OPCODE_LSH = 21,
-	OPCODE_RSH = 22,
-	OPCODE_AND = 23,
-	OPCODE_OR = 24,
-	OPCODE_JN = 25,
-	OPCODE_JMP = 26,
-	OPCODE_UNMAP = 27,
-	OPCODE_PUSHMAP = 28,
-	OPCODE_MASSN = 29,
-	OPCODE_ECALL = 30
-};
 
-struct MOp {
-	Opcode type;
-};
+namespace mlang {
+	namespace ops_n {
+		class base {
+		public:
+			Opcode type;
+			virtual void execute(runtime_stack&);
+		};
 
-struct MAddOp : MOp {};
-struct MSubOp : MOp {};
-struct MMulOp : MOp {};
-struct MDivOp : MOp {};
+		class type_operator : public base {
+		public:
+			void execute(runtime_stack&);
+		};
 
-struct MPushOp : MOp {
-	double value;
-};
+		/*class addop : public type_operator {};
+		class subop : public type_operator {};
+		class mulop : public type_operator {};
+		class divop : public type_operator {};
+		class leqop : public type_operator {};
+		class grtop : public type_operator {};
+		class geqop : public type_operator {};
+		class lessop : public type_operator {};
+		class eqop : public type_operator {};
+		class neqop : public type_operator {};
+		class lshop : public type_operator {};
+		class rshop : public type_operator {};
+		class andop : public type_operator {};
+		class orop : public type_operator {};*/
 
-struct MPushvOp : MOp {
-	std::string name;
-};
+		class pushop : public base {
+		public:
+			double value;
+			void execute(runtime_stack&);
+		};
 
-struct MAssnOp : MOp {
-	std::string name;
-};
+		class pushvop : public base {
+		public:
+			std::string name;
+		};
 
-struct MRtclOp : MOp {
-	std::string name;
-};
+		class assnop : public base {
+		public:
+			std::string name;
+		};
 
-struct MPushfOp : MOp {
-	std::string name;
-};
+		class rtclop : public base {
+		public:
+			std::string name;
+		};
 
-struct MRetOp : MOp {};
+		class pushfop : public base {
+		public:
+			std::string name;
+		};
 
-struct MPushsOp : MOp {
-	std::string str;
-};
+		class retop : public base {};
 
-struct MCallOp : MOp {};
+		class pushsop : public base {
+		public:
+			std::string str;
+			void execute(runtime_stack&);
+		};
 
-struct MPopOp : MOp {};
+		class callop : public base {};
 
-struct MPushbOp : MOp {
-	bool value;
-};
+		class popop : public base {
+		public:
+			void execute(runtime_stack&);
+		};
 
-struct MLeqOp : MOp {};
-struct MGrtOp : MOp {};
-struct MGeqOp : MOp {};
-struct MLessOp : MOp {};
-struct MEqOp : MOp {};
-struct MNeqOp : MOp {};
-struct MLshOp : MOp {};
-struct MRshOp : MOp {};
-struct MAndOp : MOp {};
-struct MOrOp : MOp {};
+		class pushbop : public base {
+		public:
+			bool value;
+			void execute(runtime_stack&);
+		};
 
-struct MJnOp : MOp {
-	uint32_t ptr;
-};
 
-struct MJmpOp : MOp {
-	uint32_t ptr;
-};
 
-struct MUnmapOp : MOp {};
-struct MPushmapOp : MOp {};
-struct MMassnOp : MOp {};
-struct MEcallOp : MOp {};
+		class jnop : public base {
+		public:
+			uint32_t ptr;
+		};
+
+		class jmpop : public base {
+		public:
+			uint32_t ptr;
+		};
+
+		class unmapop : public base {};
+		class pushmapop : public base {
+		public:
+			void execute(runtime_stack&);
+		};
+
+		class massnop : public base {};
+		class ecallop : public base {};
+
+	}
+}

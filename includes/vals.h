@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include "ops.h"
+#include "opcodes.h"
 #include <unordered_map>
 #include <string>
 

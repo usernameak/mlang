@@ -1,0 +1,36 @@
+// NOTE: This is not in ops.h because this causes circular dependencies
+
+#pragma once
+
+enum Opcode {
+	OPCODE_ADD = 1,
+	OPCODE_SUB = 2,
+	OPCODE_MUL = 3,
+	OPCODE_DIV = 4,
+	OPCODE_PUSH = 5,
+	OPCODE_PUSHV = 6,
+	OPCODE_ASSN = 7,
+	OPCODE_RTCL = 8,
+	OPCODE_PUSHF = 9,
+	OPCODE_RET = 10,
+	OPCODE_PUSHS = 11,
+	OPCODE_CALL = 12,
+	OPCODE_POP = 13,
+	OPCODE_PUSHB = 14,
+	OPCODE_LEQ = 15,
+	OPCODE_GRT = 16,
+	OPCODE_GEQ = 17,
+	OPCODE_LESS = 18,
+	OPCODE_EQ = 19,
+	OPCODE_NEQ = 20,
+	OPCODE_LSH = 21,
+	OPCODE_RSH = 22,
+	OPCODE_AND = 23,
+	OPCODE_OR = 24,
+	OPCODE_JN = 25,
+	OPCODE_JMP = 26,
+	OPCODE_UNMAP = 27,
+	OPCODE_PUSHMAP = 28,
+	OPCODE_MASSN = 29,
+	OPCODE_ECALL = 30
+};

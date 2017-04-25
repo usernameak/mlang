@@ -1,5 +1,5 @@
 #include "vals.h"
-#include "ops.h"
+#include "opcodes.h"
 
 MValue* MValue::castTo(MType type) {
 	return this;

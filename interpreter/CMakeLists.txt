@@ -17,6 +17,13 @@ add_library(mlang_shared SHARED
 	values/base.cpp
 	values/null.cpp
 	values/map.cpp
+	ops/base.cpp
+	ops/push.cpp
+	ops/pushs.cpp
+	ops/pop.cpp
+	ops/pushb.cpp
+	ops/pushmap.cpp
+	ops/type_operator.cpp
 )
 set_target_properties(mlang_shared
 	PROPERTIES OUTPUT_NAME mlang)
