@@ -21,21 +21,6 @@ namespace mlang {
 			void execute(runtime_stack&);
 		};
 
-		/*class addop : public type_operator {};
-		class subop : public type_operator {};
-		class mulop : public type_operator {};
-		class divop : public type_operator {};
-		class leqop : public type_operator {};
-		class grtop : public type_operator {};
-		class geqop : public type_operator {};
-		class lessop : public type_operator {};
-		class eqop : public type_operator {};
-		class neqop : public type_operator {};
-		class lshop : public type_operator {};
-		class rshop : public type_operator {};
-		class andop : public type_operator {};
-		class orop : public type_operator {};*/
-
 		class pushop : public base {
 		public:
 			double value;
@@ -82,8 +67,6 @@ namespace mlang {
 			bool value;
 			void execute(runtime_stack&);
 		};
-
-
 
 		class jnop : public base {
 		public:

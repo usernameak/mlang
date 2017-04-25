@@ -8,6 +8,7 @@
 #include "ops.h"
 #include "vals.h"
 #include "stack.h"
+#include "runtime_state.h"
 
 #define NATIVEFUNC_SET(name, func) nativefunctions[name] = &func
 
@@ -15,7 +16,7 @@ struct MFrame {
 	std::vector<mlang::ops_n::base*> ops;
 	std::string name;
 	std::vector<MFrame*> subframes;
-	std::map<std::string, MValue*> vars;
+	//std::map<std::string, MValue*> vars;
 
 };
 
@@ -23,6 +24,7 @@ namespace mlang {
 
 	class runtime {
 	private:
+		runtime_state state;
 		std::vector<MFrame*> frames;
 		mlang::runtime_stack* rstack;
 	public:

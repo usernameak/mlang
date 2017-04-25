@@ -18,6 +18,7 @@
 #include "ops.h"
 #include "vals.h"
 #include "types.h"
+#include "runtime_state.h"
 
 using namespace mlang;
 
@@ -243,6 +244,7 @@ MValue* runtime::run(const std::string mainname) {
 }
 
 void runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framename) {
+	state.push_scope();
 	MFrame* frame = findFrame(ldframes, framename);
 	for(auto i = frame->ops.begin(); i != frame->ops.end(); i++) {
 		ops_n::base* op = *i;
@@ -268,11 +270,11 @@ void runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framenam
 			case OPCODE_RSH:
 				op->execute(*rstack);
 			break;
-			case OPCODE_PUSHV:{
-				rstack->push(frame->vars[((ops_n::pushvop*)op)->name]);
+			case OPCODE_PUSHV:{;
+				rstack->push(state.get_var(((ops_n::pushvop*)op)->name));
 			}break;
 			case OPCODE_ASSN:{
-				frame->vars[((ops_n::assnop*)op)->name] = rstack->top();
+				state.set_var(((ops_n::assnop*)op)->name, rstack->top());
 				rstack->pop();
 			}break;
 			case OPCODE_RTCL:{
@@ -284,9 +286,11 @@ void runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framenam
 			case OPCODE_CALL:{
 				std::string str = *((std::string*) rstack->top()->castTo(MTYPE_FUNCTION)->get());
 				rstack->pop();
-				runFrame(this->frames, str); // TODO: PARENT FRAME CALLS
+				runFrame(this->frames, str);
 			}break;
-			case OPCODE_RET: return;
+			case OPCODE_RET:
+				state.pop_scope();
+			return;
 			case OPCODE_JN:{
 				uint32_t ptr = static_cast<ops_n::jnop*>(op)->ptr;
 				bool condition = *((bool*) rstack->top()->castTo(MTYPE_BOOL)->get());
@@ -317,11 +321,12 @@ void runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framenam
 				std::unordered_map<std::string, MValue*>* map = static_cast<std::unordered_map<std::string, MValue*>*>(rstack->top()->castTo(MTYPE_MAP)->get());
 				rstack->pop();
 				for(auto &it : *map) {
-					frame->vars[it.first] = dynamic_cast<MValue*>(it.second);
+					state.set_var(it.first, dynamic_cast<MValue*>(it.second));
 				}
 			}break;
 		}
 	}
+	state.pop_scope();
 }
 runtime::~runtime() {
 	delete rstack;

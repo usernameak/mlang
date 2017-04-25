@@ -24,6 +24,7 @@ add_library(mlang_shared SHARED
 	ops/pushb.cpp
 	ops/pushmap.cpp
 	ops/type_operator.cpp
+	runtime_state.cpp
 #	stack.cpp
 )
 set_target_properties(mlang_shared
