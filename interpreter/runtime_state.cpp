@@ -2,10 +2,11 @@
 
 #include <string>
 #include "vals.h"
+#include <memory>
 
 using namespace mlang;
 
-MValue* runtime_state::get_var(std::string &name) {
+std::shared_ptr<MValue> runtime_state::get_var(std::string &name) {
     for(auto it = scopes.crbegin(); it != scopes.crend(); it++) {
         auto scope = *it;
         const auto var_it = scope->vars.find(name);
@@ -15,7 +16,7 @@ MValue* runtime_state::get_var(std::string &name) {
     }
     return nullptr;
 }
-void runtime_state::set_var(std::string name, MValue* val) {
+void runtime_state::set_var(std::string name, std::shared_ptr<MValue> val) {
     for(auto it = scopes.rbegin(); it != scopes.rend(); it++) {
         auto scope = *it;
         if(scope->vars.count(name) != 0) {

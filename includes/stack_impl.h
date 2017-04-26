@@ -1,7 +1,9 @@
+#include <memory>
+
 using namespace mlang;
 
 template <typename T> T stack<T>::top() {
-    return vec.back();
+    return std::move(vec.back());
 }
 
 template <typename T> void stack<T>::pop() {

@@ -13,6 +13,6 @@ MType MValue::getType() const {
 	return type;
 }
 
-MValue* MValue::operate(Opcode op, MValue *val2) {
+std::shared_ptr<MValue> MValue::operate(Opcode op, std::shared_ptr<MValue> val2) {
 	return nullptr;
 }

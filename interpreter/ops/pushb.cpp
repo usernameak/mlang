@@ -4,6 +4,6 @@
 
 namespace mlang {
     void ops_n::pushbop::execute(runtime_stack &stack) {
-        stack.push(new MBooleanValue(value));
+        stack.push(std::make_shared<MBooleanValue>(value));
     }
 }

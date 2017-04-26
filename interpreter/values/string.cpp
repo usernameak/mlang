@@ -23,41 +23,41 @@ MType MStringValue::getType() const {
 	return type;
 }
 
-MValue* MStringValue::operate(Opcode op, MValue *val2) {
+std::shared_ptr<MValue> MStringValue::operate(Opcode op, std::shared_ptr<MValue> val2) {
 	switch(val2->getType()) {
 		case MTYPE_NUMBER:
 			switch(op) {
 				case OPCODE_ADD:
-					return new MStringValue(val + *(std::string*)val2->get());
+					return std::make_shared<MStringValue>(val + *(std::string*)val2->get());
 				break;
 			}
 		break;
 		case MTYPE_STRING:
 			switch(op) {
 				case OPCODE_ADD:
-					return new MStringValue(val + *(std::string*)val2->castTo(MTYPE_STRING)->get());
+					return std::make_shared<MStringValue>(val + *(std::string*)val2->castTo(MTYPE_STRING)->get());
 				case OPCODE_EQ:
-					return new MBooleanValue(val.compare(*(std::string*)val2->get()) == 0);
+					return std::make_shared<MBooleanValue>(val.compare(*(std::string*)val2->get()) == 0);
 				case OPCODE_NEQ:
-					return new MBooleanValue(val.compare(*(std::string*)val2->get()) != 0);
+					return std::make_shared<MBooleanValue>(val.compare(*(std::string*)val2->get()) != 0);
 			}
 		case MTYPE_NULL:
 			switch(op) {
 				case OPCODE_ADD:
-					return new MStringValue(val + "null");
+					return std::make_shared<MStringValue>(val + "null");
 			}
 		case MTYPE_BOOL:
 			switch(op) {
 				case OPCODE_ADD:
-					return new MStringValue(val + *(std::string*)val2->castTo(MTYPE_STRING)->get());
+					return std::make_shared<MStringValue>(val + *(std::string*)val2->castTo(MTYPE_STRING)->get());
 			}
-		default: return new MNullValue;
+		default: return std::make_shared<MNullValue>();
 	}
 	switch(op) {
 		case OPCODE_EQ:
-			return new MBooleanValue(false);
+			return std::make_shared<MBooleanValue>(false);
 		case OPCODE_NEQ:
-			return new MBooleanValue(true);
+			return std::make_shared<MBooleanValue>(true);
 	}
-	return new MNullValue;
+	return std::make_shared<MNullValue>();
 }

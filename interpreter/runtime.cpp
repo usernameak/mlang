@@ -238,9 +238,8 @@ MFrame* runtime::findFrame(std::vector<MFrame*> framev, const std::string framen
 	return nullptr;
 }
 
-MValue* runtime::run(const std::string mainname) {
+void runtime::run(const std::string mainname) {
 	runFrame(frames, mainname);
-	return rstack->top();
 }
 
 void runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framename) {
@@ -281,7 +280,7 @@ void runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framenam
 				nativefunctions[((ops_n::rtclop*)op)->name](rstack);
 			}break;
 			case OPCODE_PUSHF:{
-				rstack->push(new MFunctionValue(((ops_n::pushfop*)op)->name));
+				rstack->push(std::make_shared<MFunctionValue>(((ops_n::pushfop*)op)->name));
 			}break;
 			case OPCODE_CALL:{
 				std::string str = *((std::string*) rstack->top()->castTo(MTYPE_FUNCTION)->get());
@@ -308,20 +307,20 @@ void runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framenam
 				rstack->pop();
 				std::ifstream cfile(modname + ".mo", std::ios_base::binary);
 				load(dynamic_cast<std::istream&>(cfile), modname + ".");
-				MValue* retval = run(modname + ".main");
+				run(modname + ".main");
 			}break;
 			case OPCODE_MASSN:{
-				MValue *key = rstack->top();
+				std::shared_ptr<MValue> key = rstack->top();
 				rstack->pop();
-				MValue *value = rstack->top();
+				std::shared_ptr<MValue> value = rstack->top();
 				rstack->pop();
 				dynamic_cast<MMapValue*>(rstack->top()->castTo(MTYPE_MAP))->add(*((std::string*) key->castTo(MTYPE_STRING)->get()), value);
 			}break;
 			case OPCODE_UNMAP:{
-				std::unordered_map<std::string, MValue*>* map = static_cast<std::unordered_map<std::string, MValue*>*>(rstack->top()->castTo(MTYPE_MAP)->get());
+				std::unordered_map<std::string, std::shared_ptr<MValue> >* map = static_cast<std::unordered_map<std::string, std::shared_ptr<MValue> >*>(rstack->top()->castTo(MTYPE_MAP)->get());
 				rstack->pop();
 				for(auto &it : *map) {
-					state.set_var(it.first, dynamic_cast<MValue*>(it.second));
+					state.set_var(it.first, it.second);
 				}
 			}break;
 		}

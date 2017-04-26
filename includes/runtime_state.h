@@ -10,8 +10,8 @@ namespace mlang {
     private:
         std::vector<scope*> scopes;
     public:
-        void set_var(std::string, MValue*);
-        MValue* get_var(std::string&);
+        void set_var(std::string, std::shared_ptr<MValue>);
+        std::shared_ptr<MValue> get_var(std::string&);
         void push_scope();
         void pop_scope();
     };
