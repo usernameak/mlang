@@ -3,7 +3,7 @@
 using namespace mlang;
 
 template <typename T> T stack<T>::top() {
-    return std::move(vec.back());
+    return vec.back();
 }
 
 template <typename T> void stack<T>::pop() {
