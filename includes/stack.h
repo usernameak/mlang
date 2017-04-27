@@ -1,11 +1,11 @@
 #pragma once
 
-#include <forward_list>
+#include <vector>
 
 namespace mlang {
     template <typename T> class stack {
     private:
-        std::forward_list<T> lst;
+        std::vector<T> vec;
     public:
         T top();
         void pop();

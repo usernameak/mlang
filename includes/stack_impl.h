@@ -3,13 +3,13 @@
 using namespace mlang;
 
 template <typename T> T stack<T>::top() {
-    return lst.front();
+    return vec.back();
 }
 
 template <typename T> void stack<T>::pop() {
-    lst.pop_front();
+    vec.pop_back();
 }
 
 template <typename T> void stack<T>::push(T val) {
-    lst.push_front(val);
+    vec.push_back(val);
 }
