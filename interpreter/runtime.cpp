@@ -238,8 +238,9 @@ MFrame* runtime::findFrame(std::vector<MFrame*> framev, const std::string framen
 	return nullptr;
 }
 
-void runtime::run(const std::string mainname) {
+MValue* runtime::run(const std::string mainname) {
 	runFrame(frames, mainname);
+	return rstack->top();
 }
 
 void runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framename) {
@@ -280,20 +281,16 @@ void runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framenam
 				nativefunctions[((ops_n::rtclop*)op)->name](rstack);
 			}break;
 			case OPCODE_PUSHF:{
-				rstack->push(std::make_shared<MFunctionValue>(((ops_n::pushfop*)op)->name));
+				rstack->push(new MFunctionValue(((ops_n::pushfop*)op)->name));
 			}break;
 			case OPCODE_CALL:{
-				std::shared_ptr<MValue> top = rstack->top();
-				MValue* fn = top->castTo(MTYPE_FUNCTION);
-				void* fname_ptr = fn->get();
-				std::string str = *(std::string*)fname_ptr;
-				//std::string str = *((std::string*) rstack->top()->castTo(MTYPE_FUNCTION)->get());
+				std::string str = *((std::string*) rstack->top()->castTo(MTYPE_FUNCTION)->get());
 				rstack->pop();
 				runFrame(this->frames, str);
 			}break;
-			case OPCODE_RET:{
+			case OPCODE_RET:
 				state.pop_scope();
-			return;}break;
+			return;
 			case OPCODE_JN:{
 				uint32_t ptr = static_cast<ops_n::jnop*>(op)->ptr;
 				bool condition = *((bool*) rstack->top()->castTo(MTYPE_BOOL)->get());
@@ -311,21 +308,20 @@ void runtime::runFrame(std::vector<MFrame*> ldframes, const std::string framenam
 				rstack->pop();
 				std::ifstream cfile(modname + ".mo", std::ios_base::binary);
 				load(dynamic_cast<std::istream&>(cfile), modname + ".");
-				run(modname + ".main");
+				MValue* retval = run(modname + ".main");
 			}break;
 			case OPCODE_MASSN:{
-				std::shared_ptr<MValue> key = rstack->top();
+				MValue *key = rstack->top();
 				rstack->pop();
-				std::shared_ptr<MValue> value = rstack->top();
+				MValue *value = rstack->top();
 				rstack->pop();
 				dynamic_cast<MMapValue*>(rstack->top()->castTo(MTYPE_MAP))->add(*((std::string*) key->castTo(MTYPE_STRING)->get()), value);
 			}break;
 			case OPCODE_UNMAP:{
-				std::shared_ptr<MValue> top = rstack->top();
-				std::unordered_map<std::string, std::shared_ptr<MValue> >* map = static_cast<std::unordered_map<std::string, std::shared_ptr<MValue> >*>(top->castTo(MTYPE_MAP)->get());
+				std::unordered_map<std::string, MValue*>* map = static_cast<std::unordered_map<std::string, MValue*>*>(rstack->top()->castTo(MTYPE_MAP)->get());
 				rstack->pop();
-				for(auto it : *map) {
-					state.set_var(it.first, it.second);
+				for(auto &it : *map) {
+					state.set_var(it.first, dynamic_cast<MValue*>(it.second));
 				}
 			}break;
 		}

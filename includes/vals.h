@@ -3,7 +3,7 @@
 #include <string>
 #include "opcodes.h"
 #include <unordered_map>
-#include <memory>
+#include <string>
 
 enum MType {
 	MTYPE_NULL,
@@ -14,14 +14,14 @@ enum MType {
 	MTYPE_MAP
 };
 
-class MValue : public std::enable_shared_from_this<MValue> {
+class MValue {
 public:
 	static const MType type = MTYPE_NULL;
 	virtual MValue* castTo(MType);
 	virtual void* get();
 	//virtual MValue& operator+(MValue&) const;
 	virtual MType getType() const;
-	virtual std::shared_ptr<MValue> operate(Opcode, std::shared_ptr<MValue>);
+	virtual MValue* operate(Opcode, MValue*);
 };
 
 class MNullValue : public MValue {
@@ -29,7 +29,7 @@ public:
 	MValue* castTo(MType);
 	void* get();
 	MType getType() const;
-	std::shared_ptr<MValue> operate(Opcode, std::shared_ptr<MValue>);
+	MValue* operate(Opcode, MValue*);
 };
 
 class MNumberValue : public MValue {
@@ -41,7 +41,7 @@ public:
 	MValue* castTo(MType);
 	void* get();
 	MType getType() const;
-	std::shared_ptr<MValue> operate(Opcode, std::shared_ptr<MValue>);
+	MValue* operate(Opcode, MValue*);
 };
 
 class MStringValue : public MValue {
@@ -53,7 +53,7 @@ public:
 	MValue* castTo(MType);
 	void* get();
 	MType getType() const;
-	std::shared_ptr<MValue> operate(Opcode, std::shared_ptr<MValue>);
+	MValue* operate(Opcode, MValue*);
 };
 
 class MFunctionValue : public MValue {
@@ -65,7 +65,7 @@ public:
 	MValue* castTo(MType);
 	void* get();
 	MType getType() const;
-	std::shared_ptr<MValue> operate(Opcode, std::shared_ptr<MValue>);
+	MValue* operate(Opcode, MValue*);
 };
 
 class MBooleanValue : public MValue {
@@ -77,18 +77,18 @@ public:
 	MValue* castTo(MType);
 	void* get();
 	MType getType() const;
-	std::shared_ptr<MValue> operate(Opcode, std::shared_ptr<MValue>);
+	MValue* operate(Opcode, MValue*);
 };
 
 class MMapValue : public MValue {
 private:
-	std::unordered_map<std::string, std::shared_ptr<MValue> > val;
+	std::unordered_map<std::string, MValue*> val;
 public:
 	MMapValue();
 	static const MType type = MTYPE_MAP;
 	MValue* castTo(MType);
 	void* get();
 	MType getType() const;
-	std::shared_ptr<MValue> operate(Opcode, std::shared_ptr<MValue>);
-	void add(std::string, std::shared_ptr<MValue>);
+	MValue* operate(Opcode, MValue*);
+	void add(std::string, MValue*);
 };

@@ -1,0 +1,106 @@
+#define YYCTYPE unsigned char
+#define YYCURSOR cursor
+#define YYLIMIT limit
+#define YYMARKER marker
+#define YYFILL(n) {}
+#define YYDEBUG(s,c)
+
+    const char *cursor = ScriptPtr;
+    const char *limit = ScriptEndPtr;
+std1:
+	tok = YYCURSOR;
+std2:
+    /*!re2c
+        WSP = ([\000- ]\[\n]);
+        NUM = "-"? ("0" | [1-9][0-9]*);
+        D	= [0-9];
+    	L	= [a-zA-Z_];
+    */
+#define RET(x)	TokenType = (x); goto normal_token;
+
+    /*!re2c
+        WSP+ {goto std1;}
+        "\n" {goto newline;}
+        NUM  {RET(TK_FloatConst);}
+        (["](([\\]["])|[^"])*["]) { RET(TK_StringConst); }
+        "return" {RET(TK_Return);}
+        "if" {RET(TK_If);}
+        "else" {RET(TK_Else);}
+        "import" {RET(TK_Import);}
+        "export" {RET(TK_Export);}
+        "for" {RET(TK_For);}
+        L (L|D)*					{ RET(TK_Identifier); }
+        "==" {RET(TK_Equals);}
+        "!=" {RET(TK_NotEquals);}
+        ">>" {RET(TK_RightShift);}
+        "<<" {RET(TK_LeftShift);}
+        ">=" {RET(TK_Geq);}
+        "<=" {RET(TK_Leq);}
+        "=" {RET('=');}
+        "{" {RET('{');}
+        "}" {RET('}');}
+        "(" {RET('(');}
+        ")" {RET(')');}
+        "+" {RET('+');}
+        "-" {RET('-');}
+        "/" {RET('/');}
+        "*" {RET('*');}
+        "$" {RET('$');}
+        "|" {RET('|');}
+        "&" {RET('&');}
+        ">" {RET('>');}
+        "<" {RET('<');}
+        ";" {RET(';');}
+        "," {RET(',');}
+    */
+
+newline:
+	if (YYCURSOR >= YYLIMIT)
+	{
+		ScriptPtr = ScriptEndPtr;
+		return_val = false;
+		goto end;
+	}
+	Line++;
+	Crossed = true;
+	goto std1;
+
+normal_token:
+	ScriptPtr = (YYCURSOR >= YYLIMIT) ? ScriptEndPtr : cursor;
+	StringLen = int(ScriptPtr - tok);
+	if (tokens && (TokenType == TK_StringConst))
+	{
+		StringLen -= 2;
+		if (StringLen >= MAX_STRING_SIZE)
+		{
+			BigStringBuffer.assign(tok+1, StringLen);
+		}
+		else
+		{
+			memcpy (StringBuffer, tok+1, StringLen);
+		}
+	}
+	else
+	{
+		if (StringLen >= MAX_STRING_SIZE)
+		{
+			BigStringBuffer.assign(tok, StringLen);
+		}
+		else
+		{
+			memcpy (StringBuffer, tok, StringLen);
+		}
+	}
+	if (StringLen < MAX_STRING_SIZE)
+	{
+		String = StringBuffer;
+		StringBuffer[StringLen] = '\0';
+	}
+	else
+	{
+		String = const_cast<char*>(BigStringBuffer.c_str());
+	}
+	return_val = true;
+	goto end;
+
+end:

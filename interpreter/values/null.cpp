@@ -20,15 +20,15 @@ MType MNullValue::getType() const {
 	return type;
 }
 
-std::shared_ptr<MValue> MNullValue::operate(Opcode op, std::shared_ptr<MValue> val2) {
+MValue* MNullValue::operate(Opcode op, MValue *val2) {
 	switch(op) {
 		case OPCODE_ADD:
 			switch(val2->getType()) {
 				case MTYPE_STRING:
-					return std::make_shared<MStringValue>("null"+*(std::string*)val2->get());
+					return new MStringValue("null"+*(std::string*)val2->get());
 				break;
 				default:
-					return shared_from_this();
+					return this;
 				break;
 			}
 		break;
@@ -40,25 +40,25 @@ std::shared_ptr<MValue> MNullValue::operate(Opcode op, std::shared_ptr<MValue> v
 		case OPCODE_GRT:
 		case OPCODE_GEQ:
 		case OPCODE_LESS:
-			return shared_from_this();
+			return this;
 		break;
 		case OPCODE_EQ:
 			switch(val2->getType()) {
 				case MTYPE_NULL:
-					return std::make_shared<MBooleanValue>(true);
+					return new MBooleanValue(true);
 				break;
 				default:
-					return std::make_shared<MBooleanValue>(false);
+					return new MBooleanValue(false);
 				break;
 			}
 		break;
 		case OPCODE_NEQ:
 			switch(val2->getType()) {
 				case MTYPE_NULL:
-					return std::make_shared<MBooleanValue>(false);
+					return new MBooleanValue(false);
 				break;
 				default:
-					return std::make_shared<MBooleanValue>(true);
+					return new MBooleanValue(true);
 				break;
 			}
 		break;
@@ -66,7 +66,7 @@ std::shared_ptr<MValue> MNullValue::operate(Opcode op, std::shared_ptr<MValue> v
 		case OPCODE_AND:
 			switch(val2->getType()) {
 				case MTYPE_BOOL:
-					return std::make_shared<MBooleanValue>(false);
+					return new MBooleanValue(false);
 				break;
 			}
 		break;
@@ -80,8 +80,8 @@ std::shared_ptr<MValue> MNullValue::operate(Opcode op, std::shared_ptr<MValue> v
 		case OPCODE_LSH:
 		case OPCODE_RSH:
 		default:
-			return shared_from_this();
+			return this;
 		break;
 	}
-	return shared_from_this();
+	return this;
 }

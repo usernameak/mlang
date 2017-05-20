@@ -34,53 +34,53 @@ MType MNumberValue::getType() const {
 	return type;
 }
 
-std::shared_ptr<MValue> MNumberValue::operate(Opcode op, std::shared_ptr<MValue> val2) {
+MValue* MNumberValue::operate(Opcode op, MValue *val2) {
 	switch(val2->getType()) {
 		case MTYPE_NUMBER:
 			switch(op) {
 				case OPCODE_ADD:
-					return std::make_shared<MNumberValue>(val+ *(double*)val2->get());
+					return new MNumberValue(val+ *(double*)val2->get());
 				break;
 				case OPCODE_SUB:
-					return std::make_shared<MNumberValue>(val- *(double*)val2->get());
+					return new MNumberValue(val- *(double*)val2->get());
 				case OPCODE_MUL:
-					return std::make_shared<MNumberValue>(val* *(double*)val2->get());
+					return new MNumberValue(val* *(double*)val2->get());
 				case OPCODE_DIV:
-					return std::make_shared<MNumberValue>(val/ *(double*)val2->get());
+					return new MNumberValue(val/ *(double*)val2->get());
 				case OPCODE_LEQ:
-					return std::make_shared<MBooleanValue>(val<= *(double*)val2->get());
+					return new MBooleanValue(val<= *(double*)val2->get());
 				case OPCODE_GRT:
-					return std::make_shared<MBooleanValue>(val> *(double*)val2->get());
+					return new MBooleanValue(val> *(double*)val2->get());
 				case OPCODE_GEQ:
-					return std::make_shared<MBooleanValue>(val>= *(double*)val2->get());
+					return new MBooleanValue(val>= *(double*)val2->get());
 				case OPCODE_LESS:
-					return std::make_shared<MBooleanValue>(val< *(double*)val2->get());
+					return new MBooleanValue(val< *(double*)val2->get());
 				case OPCODE_EQ:
-					return std::make_shared<MBooleanValue>(val== *(double*)val2->get());
+					return new MBooleanValue(val== *(double*)val2->get());
 				case OPCODE_NEQ:
-					return std::make_shared<MBooleanValue>(val!= *(double*)val2->get());
+					return new MBooleanValue(val!= *(double*)val2->get());
 				case OPCODE_LSH:
-					return std::make_shared<MNumberValue>((int32_t)val<<(int32_t)(*(double*)val2->get()));
+					return new MNumberValue((int32_t)val<<(int32_t)(*(double*)val2->get()));
 				case OPCODE_RSH:
-					return std::make_shared<MNumberValue>((int32_t)val>>(int32_t)(*(double*)val2->get()));
+					return new MNumberValue((int32_t)val>>(int32_t)(*(double*)val2->get()));
 				case OPCODE_AND:
-					return std::make_shared<MNumberValue>((int32_t)val&(int32_t)(*(double*)val2->get()));
+					return new MNumberValue((int32_t)val&(int32_t)(*(double*)val2->get()));
 				case OPCODE_OR:
-					return std::make_shared<MNumberValue>((int32_t)val|(int32_t)(*(double*)val2->get()));
+					return new MNumberValue((int32_t)val|(int32_t)(*(double*)val2->get()));
 			}
 		break;
 		case MTYPE_STRING:
 			switch(op) {
 				case OPCODE_ADD:
-					return std::make_shared<MStringValue>(doubleToString(val) + *(std::string*)val2->get());
+					return new MStringValue(doubleToString(val) + *(std::string*)val2->get());
 			}
-		default: return std::make_shared<MNullValue>();
+		default: return new MNullValue;
 	}
 	switch(op) {
 		case OPCODE_EQ:
-			return std::make_shared<MBooleanValue>(false);
+			return new MBooleanValue(false);
 		case OPCODE_NEQ:
-			return std::make_shared<MBooleanValue>(true);
+			return new MBooleanValue(true);
 	}
-	return std::make_shared<MNullValue>();
+	return new MNullValue;
 }

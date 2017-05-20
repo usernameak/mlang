@@ -8,6 +8,6 @@
 namespace mlang {
     struct scope {
     public:
-        std::unordered_map<std::string, std::shared_ptr<MValue> > vars;
+        std::unordered_map<std::string, MValue*> vars;
     };
 }

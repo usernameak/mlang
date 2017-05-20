@@ -21,7 +21,7 @@ MType MBooleanValue::getType() const {
 	return type;
 }
 
-std::shared_ptr<MValue> MBooleanValue::operate(Opcode op, std::shared_ptr<MValue> val2) {
+MValue* MBooleanValue::operate(Opcode op, MValue *val2) {
 	switch(val2->getType()) {
 		/*case MTYPE_STRING:
 			switch(op) {
@@ -46,37 +46,37 @@ std::shared_ptr<MValue> MBooleanValue::operate(Opcode op, std::shared_ptr<MValue
 		case MTYPE_NULL:
 			switch(op) {
 				case OPCODE_AND:
-					return std::make_shared<MBooleanValue>(false);
+					return new MBooleanValue(false);
 				case OPCODE_OR:
-					return std::make_shared<MBooleanValue>(val);
+					return new MBooleanValue(val);
 			}
 		break;
 
 		case MTYPE_BOOL:
 			switch(op) {
 				case OPCODE_EQ:
-					return std::make_shared<MBooleanValue>(val == *(bool*)val2->get());
+					return new MBooleanValue(val == *(bool*)val2->get());
 				case OPCODE_NEQ:
-					return std::make_shared<MBooleanValue>(val != *(bool*)val2->get());
+					return new MBooleanValue(val != *(bool*)val2->get());
 			}
 
 		case MTYPE_NUMBER:
 			switch(op) {
 				case OPCODE_AND:
-					return std::make_shared<MBooleanValue>(val && *(bool*)val2->castTo(MTYPE_BOOL)->get());
+					return new MBooleanValue(val && *(bool*)val2->castTo(MTYPE_BOOL)->get());
 				case OPCODE_OR:
-					return std::make_shared<MBooleanValue>(val || *(bool*)val2->castTo(MTYPE_BOOL)->get());
+					return new MBooleanValue(val || *(bool*)val2->castTo(MTYPE_BOOL)->get());
 			}
 		break;
 
 		case MTYPE_STRING:
 			switch(op) {
 				case OPCODE_ADD:
-					return std::make_shared<MStringValue>(val ? "true" : "false" + *(std::string*)val2->get());
+					return new MStringValue(val ? "true" : "false" + *(std::string*)val2->get());
 				case OPCODE_AND:
-					return std::make_shared<MBooleanValue>(val && *(bool*)val2->castTo(MTYPE_BOOL)->get());
+					return new MBooleanValue(val && *(bool*)val2->castTo(MTYPE_BOOL)->get());
 				case OPCODE_OR:
-					return std::make_shared<MBooleanValue>(val || *(bool*)val2->castTo(MTYPE_BOOL)->get());
+					return new MBooleanValue(val || *(bool*)val2->castTo(MTYPE_BOOL)->get());
 			}
 		break;
 
@@ -84,10 +84,10 @@ std::shared_ptr<MValue> MBooleanValue::operate(Opcode op, std::shared_ptr<MValue
 
 	switch(op) {
 		case OPCODE_EQ:
-			return std::make_shared<MBooleanValue>(false);
+			return new MBooleanValue(false);
 		case OPCODE_NEQ:
-			return std::make_shared<MBooleanValue>(true);
+			return new MBooleanValue(true);
 	}
 
-	return std::make_shared<MNullValue>();
+	return new MNullValue;
 }

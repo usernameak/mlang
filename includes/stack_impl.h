@@ -1,5 +1,3 @@
-#include <memory>
-
 using namespace mlang;
 
 template <typename T> T stack<T>::top() {

@@ -23,21 +23,21 @@ MType MFunctionValue::getType() const {
 	return type;
 }
 
-std::shared_ptr<MValue> MFunctionValue::operate(Opcode op, std::shared_ptr<MValue> val2) {
+MValue* MFunctionValue::operate(Opcode op, MValue *val2) {
 	switch(val2->getType()) {
 		case MTYPE_FUNCTION:
 			switch(op) {
 				case OPCODE_EQ:
-					return std::make_shared<MBooleanValue>(fname.compare(*(std::string*)val2->get()) == 0);
+					return new MBooleanValue(fname.compare(*(std::string*)val2->get()) == 0);
 				case OPCODE_NEQ:
-					return std::make_shared<MBooleanValue>(fname.compare(*(std::string*)val2->get()) != 0);
+					return new MBooleanValue(fname.compare(*(std::string*)val2->get()) != 0);
 			}
 	}
 	switch(op) {
 		case OPCODE_EQ:
-			return std::make_shared<MBooleanValue>(false);
+			return new MBooleanValue(false);
 		case OPCODE_NEQ:
-			return std::make_shared<MBooleanValue>(true);
+			return new MBooleanValue(true);
 	}
-	return std::make_shared<MNullValue>();
+	return new MNullValue;
 }

@@ -32,7 +32,7 @@ namespace mlang {
 		~runtime();
 		void load(std::istream&, const std::string = "");
 		MFrame* loadFrame(std::istream&, const std::string = "");
-		void run(const std::string = "main");
+		MValue* run(const std::string = "main");
 		static MFrame* findFrame(std::vector<MFrame*>, const std::string);
 		void runFrame(std::vector<MFrame*>, const std::string);
 	};

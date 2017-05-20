@@ -25,10 +25,10 @@ MType MMapValue::getType() const {
 	return type;
 }
 
-std::shared_ptr<MValue> MMapValue::operate(Opcode op, std::shared_ptr<MValue> val2) {
-	return std::make_shared<MNullValue>();
+MValue* MMapValue::operate(Opcode op, MValue *val2) {
+	return new MNullValue;
 }
 
-void MMapValue::add(std::string key, std::shared_ptr<MValue> value) {
+void MMapValue::add(std::string key, MValue *value) {
     val[key] = value;
 }
