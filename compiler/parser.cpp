@@ -7,7 +7,7 @@
 #include "util.h"
 #include <cstring>
 
-Parser::Parser(Scanner &sc) : scanner(sc) {}
+Parser::Parser(Scanner &sc) : scanner(sc), saving(false) {}
 
 void Parser::Parse() {
     std::shared_ptr<Statement> stmt;

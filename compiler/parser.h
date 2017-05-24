@@ -23,4 +23,5 @@ public:
 protected:
     Scanner &scanner;
     std::vector<std::shared_ptr<Statement>> statements;
+    bool saving;
 };
